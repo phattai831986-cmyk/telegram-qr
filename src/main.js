@@ -95,6 +95,34 @@ function roundedRect(context, x, y, width, height, radius) {
   context.roundRect(x, y, width, height, radius);
 }
 
+function drawQrCornerBrackets(context, x, y, size) {
+  const inset = 13;
+  const length = 35;
+  const right = x + size - inset;
+  const bottom = y + size - inset;
+
+  context.save();
+  context.strokeStyle = "#1671ce";
+  context.lineWidth = 8;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.beginPath();
+  context.moveTo(x + inset + length, y + inset);
+  context.lineTo(x + inset, y + inset);
+  context.lineTo(x + inset, y + inset + length);
+  context.moveTo(right - length, y + inset);
+  context.lineTo(right, y + inset);
+  context.lineTo(right, y + inset + length);
+  context.moveTo(x + inset, bottom - length);
+  context.lineTo(x + inset, bottom);
+  context.lineTo(x + inset + length, bottom);
+  context.moveTo(right, bottom - length);
+  context.lineTo(right, bottom);
+  context.lineTo(right - length, bottom);
+  context.stroke();
+  context.restore();
+}
+
 function drawPosterText(context, text, x, y, maxWidth, font) {
   context.font = font;
   let displayText = text;
@@ -167,6 +195,7 @@ async function createPosterPng({ details, qrDataUrl }) {
   context.fillStyle = "#fff";
   roundedRect(context, 328, 437, 344, 344, 20);
   context.fill();
+  drawQrCornerBrackets(context, 328, 437, 344);
   context.drawImage(qr, 350, 459, 300, 300);
 
   context.fillStyle = "#75877e";
