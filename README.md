@@ -15,3 +15,10 @@ npm run dev
 ```
 
 Tạo bản production bằng `npm run build`; chạy kiểm thử định dạng QR bằng `npm test`.
+
+## Triển khai GitHub Pages
+
+Workflow `.github/workflows/deploy-pages.yml` tự build và triển khai khi có commit mới lên
+`main` hoặc khi chạy thủ công từ tab Actions. Nếu GitHub Pages chưa được bật cho repository,
+vào **Settings → Pages** và chọn **GitHub Actions** làm nguồn triển khai. Sau khi workflow chạy
+thành công, website sẽ có tại `https://phattai831986-cmyk.github.io/telegram-qr/`.
