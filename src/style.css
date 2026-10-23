@@ -569,15 +569,32 @@ h1 {
 .poster-qr {
   position: relative;
   z-index: 1;
-  width: 142px;
-  height: 142px;
+  width: 154px;
+  height: 154px;
   display: grid;
   place-items: center;
   margin: 0 auto 12px;
-  padding: 7px;
-  border: 1px solid #e8eee9;
-  border-radius: 7px;
+  padding: 18px;
+  border-radius: 12px;
   background: #fff;
+  box-shadow: 0 2px 8px rgba(25, 76, 46, 0.09);
+}
+
+.poster-qr::before {
+  position: absolute;
+  inset: 6px;
+  border-radius: 8px;
+  background:
+    linear-gradient(#1671ce, #1671ce) left top / 22px 3px no-repeat,
+    linear-gradient(#1671ce, #1671ce) left top / 3px 22px no-repeat,
+    linear-gradient(#1671ce, #1671ce) right top / 22px 3px no-repeat,
+    linear-gradient(#1671ce, #1671ce) right top / 3px 22px no-repeat,
+    linear-gradient(#1671ce, #1671ce) left bottom / 22px 3px no-repeat,
+    linear-gradient(#1671ce, #1671ce) left bottom / 3px 22px no-repeat,
+    linear-gradient(#1671ce, #1671ce) right bottom / 22px 3px no-repeat,
+    linear-gradient(#1671ce, #1671ce) right bottom / 3px 22px no-repeat;
+  content: "";
+  pointer-events: none;
 }
 
 .qr-placeholder {
