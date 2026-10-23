@@ -10,6 +10,19 @@ const transfer = {
   description: "Thanh toan",
 };
 
+function readTopLevelFields(payload) {
+  const fields = [];
+  let offset = 0;
+  while (offset < payload.length) {
+    const id = payload.slice(offset, offset + 2);
+    const length = Number(payload.slice(offset + 2, offset + 4));
+    fields.push({ id, value: payload.slice(offset + 4, offset + 4 + length) });
+    offset += 4 + length;
+    if (id === "63") break;
+  }
+  return fields;
+}
+
 test("uses the standard CRC-16/CCITT-FALSE checksum", () => {
   assert.equal(crc16("123456789"), "29B1");
 });
@@ -28,8 +41,9 @@ test("creates a VietQR transfer payload with bank account, amount, and descripti
 
 test("omits optional amount and transfer description when not provided", () => {
   const payload = createVietQrPayload({ ...transfer, amount: "", description: "" });
-  assert.ok(!payload.includes("540"));
-  assert.ok(!payload.includes("62"));
+  const fields = readTopLevelFields(payload);
+  assert.ok(!fields.some(({ id }) => id === "54"));
+  assert.ok(!fields.some(({ id }) => id === "62"));
   assert.match(payload, /6304[0-9A-F]{4}$/);
 });
 
