@@ -585,14 +585,14 @@ h1 {
   inset: 6px;
   border-radius: 8px;
   background:
-    linear-gradient(#1671ce, #1671ce) left top / 22px 3px no-repeat,
-    linear-gradient(#1671ce, #1671ce) left top / 3px 22px no-repeat,
-    linear-gradient(#1671ce, #1671ce) right top / 22px 3px no-repeat,
-    linear-gradient(#1671ce, #1671ce) right top / 3px 22px no-repeat,
-    linear-gradient(#1671ce, #1671ce) left bottom / 22px 3px no-repeat,
-    linear-gradient(#1671ce, #1671ce) left bottom / 3px 22px no-repeat,
-    linear-gradient(#1671ce, #1671ce) right bottom / 22px 3px no-repeat,
-    linear-gradient(#1671ce, #1671ce) right bottom / 3px 22px no-repeat;
+    linear-gradient(#198754, #198754) left top / 22px 3px no-repeat,
+    linear-gradient(#198754, #198754) left top / 3px 22px no-repeat,
+    linear-gradient(#198754, #198754) right top / 22px 3px no-repeat,
+    linear-gradient(#198754, #198754) right top / 3px 22px no-repeat,
+    linear-gradient(#198754, #198754) left bottom / 22px 3px no-repeat,
+    linear-gradient(#198754, #198754) left bottom / 3px 22px no-repeat,
+    linear-gradient(#198754, #198754) right bottom / 22px 3px no-repeat,
+    linear-gradient(#198754, #198754) right bottom / 3px 22px no-repeat;
   content: "";
   pointer-events: none;
 }
