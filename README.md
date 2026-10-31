@@ -9,6 +9,10 @@ Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-pos
 Ảnh hiện tại có nội dung BHXH/VssID; ảnh được giữ nguyên và QR VietQR cùng thông tin người
 nhận được đặt trong khung trống.
 
+Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background.png`.
+Ảnh hiện tại có nội dung BHXH/VssID; ảnh được giữ nguyên và QR VietQR cùng thông tin người
+nhận được đặt trong khung trống.
+
 ## Chạy ứng dụng
 
 ```sh

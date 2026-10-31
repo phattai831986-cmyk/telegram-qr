@@ -25,7 +25,7 @@ const elements = {
 };
 const posterQr = document.querySelector("#poster-qr");
 const posterRecipient = document.querySelector("#poster-recipient");
-const QR_POSITION = { left: 0.33, top: 0.41, size: 0.34 };
+const QR_POSITION = { left: 0.34, top: 0.425, size: 0.32 };
 const POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background.png`;
 let currentPosterData = null;
 let currentPosterBlob = null;
@@ -408,13 +408,13 @@ async function createPosterPng({ details, qrDataUrl }) {
   context.textAlign = "center";
   context.fillStyle = "#475e7d";
   context.font = `bold ${Math.round(canvas.width * 0.014)}px Arial, sans-serif`;
-  context.fillText("CHỦ TÀI KHOẢN", canvas.width / 2, canvas.height * 0.642);
+  context.fillText("CHỦ TÀI KHOẢN", canvas.width / 2, canvas.height * 0.666);
   context.fillStyle = "#173b2e";
   context.font = `bold ${Math.round(canvas.width * 0.023)}px Arial, sans-serif`;
-  drawPosterText(context, details.accountName, canvas.width / 2, canvas.height * 0.66, canvas.width * 0.39, context.font);
+  drawPosterText(context, details.accountName, canvas.width / 2, canvas.height * 0.682, canvas.width * 0.39, context.font);
   context.fillStyle = "#53685d";
   context.font = `${Math.round(canvas.width * 0.018)}px Arial, sans-serif`;
-  drawPosterText(context, details.accountNumber, canvas.width / 2, canvas.height * 0.678, canvas.width * 0.39, context.font);
+  drawPosterText(context, details.accountNumber, canvas.width / 2, canvas.height * 0.699, canvas.width * 0.39, context.font);
   context.textAlign = "left";
 
   return new Promise((resolve, reject) => {
