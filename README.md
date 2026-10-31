@@ -4,6 +4,10 @@
 và tên chủ tài khoản; số tiền và nội dung chuyển khoản là tùy chọn. Mã QR và poster được
 tạo ngay trên trình duyệt, thông tin không được gửi lên máy chủ.
 
+Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background.png`.
+Ảnh hiện tại có nội dung BHXH/VssID; ảnh được giữ nguyên và QR VietQR cùng thông tin người
+nhận được đặt trong khung trống.
+
 ## Chạy ứng dụng
 
 ```sh
