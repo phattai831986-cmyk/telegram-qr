@@ -1,5 +1,12 @@
 const TELEGRAM_HEX_COLOR = /^#[\da-f]{6}$/i;
 
+export function createTelegramShareUrl(appUrl, text = "Mở VietQR Studio để tạo mã QR chuyển khoản.") {
+  const shareUrl = new URL("https://t.me/share/url");
+  shareUrl.searchParams.set("url", appUrl);
+  shareUrl.searchParams.set("text", text);
+  return shareUrl.href;
+}
+
 export function initializeTelegramMiniApp(
   webApp = globalThis.Telegram?.WebApp,
   root = globalThis.document?.documentElement,

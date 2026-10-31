@@ -46,6 +46,9 @@ của chính mình.
 RLS giới hạn hồ sơ và ảnh poster trong tài khoản đã đăng nhập; bucket ảnh là riêng tư. Nút chia sẻ
 mở bảng chia sẻ của thiết bị để gửi ảnh qua Telegram hoặc ứng dụng khác nếu trình duyệt hỗ trợ.
 Nếu không hỗ trợ chia sẻ ảnh trực tiếp, poster được tải xuống để bạn đính kèm thủ công.
+Nút “Chia sẻ liên kết qua Telegram” mở bộ chọn chat/nhóm Telegram cùng URL Mini App. Việc gửi
+ảnh poster là thao tác riêng: dùng “Chia sẻ ảnh poster” rồi chọn Telegram nếu thiết bị hỗ trợ,
+hoặc tải PNG và tự đính kèm. Telegram không gửi ảnh trực tiếp chỉ bằng liên kết chia sẻ.
 
 ## Mở ứng dụng trong Telegram
 

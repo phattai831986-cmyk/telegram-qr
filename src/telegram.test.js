@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initializeTelegramMiniApp } from "./telegram.js";
+import { createTelegramShareUrl, initializeTelegramMiniApp } from "./telegram.js";
 
 function createRoot() {
   const properties = new Map();
@@ -21,6 +21,16 @@ function createRoot() {
 
 test("does nothing when opened outside Telegram", () => {
   assert.equal(initializeTelegramMiniApp(null, createRoot(), { innerHeight: 700 }), null);
+});
+
+test("creates a Telegram chat-picker link with the Mini App URL and share text", () => {
+  const url = new URL(
+    createTelegramShareUrl("https://example.com/mini-app/", "Open this Mini App"),
+  );
+  assert.equal(url.origin, "https://t.me");
+  assert.equal(url.pathname, "/share/url");
+  assert.equal(url.searchParams.get("url"), "https://example.com/mini-app/");
+  assert.equal(url.searchParams.get("text"), "Open this Mini App");
 });
 
 test("initializes Telegram and tracks stable viewport height", () => {

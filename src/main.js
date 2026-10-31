@@ -2,7 +2,7 @@ import QRCode from "qrcode";
 import { BANKS } from "./banks.js";
 import { createVietQrPayload } from "./vietqr.js";
 import { supabase, supabaseConfigured } from "./supabase.js";
-import { initializeTelegramMiniApp } from "./telegram.js";
+import { createTelegramShareUrl, initializeTelegramMiniApp } from "./telegram.js";
 import "./style.css";
 
 const form = document.querySelector("#transfer-form");
@@ -18,6 +18,7 @@ const setDefaultAccountButton = document.querySelector("#set-default-account-but
 const savePosterButton = document.querySelector("#save-poster-button");
 const restorePosterButton = document.querySelector("#restore-poster-button");
 const sharePosterButton = document.querySelector("#share-poster-button");
+const shareTelegramButton = document.querySelector("#share-telegram-button");
 const authForm = document.querySelector("#auth-form");
 const signUpButton = document.querySelector("#sign-up-button");
 const signOutButton = document.querySelector("#sign-out-button");
@@ -389,7 +390,7 @@ sharePosterButton.addEventListener("click", async () => {
         title: "Poster QR chuyển khoản",
         text: "Quét mã QR để chuyển khoản.",
       });
-      setSyncStatus("Đã mở bảng chia sẻ. Chọn Telegram, nhóm hoặc ứng dụng muốn gửi.");
+      setSyncStatus("Đã mở bảng chia sẻ ảnh. Chọn Telegram, nhóm hoặc ứng dụng muốn gửi poster PNG.");
     } else {
       downloadBlob(blob, "vietqr-poster.png");
       setSyncStatus("Trình duyệt này chưa hỗ trợ gửi ảnh trực tiếp. Poster đã tải xuống; hãy đính kèm ảnh trong Telegram hoặc ứng dụng khác.");
@@ -400,6 +401,21 @@ sharePosterButton.addEventListener("click", async () => {
   } finally {
     updateSyncControls();
   }
+});
+
+shareTelegramButton.addEventListener("click", () => {
+  const appUrl = new URL(import.meta.env.BASE_URL, window.location.origin).href;
+  const shareUrl = createTelegramShareUrl(appUrl);
+  if (telegramApp?.openTelegramLink) {
+    telegramApp.openTelegramLink(shareUrl);
+  } else {
+    const link = document.createElement("a");
+    link.href = shareUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.click();
+  }
+  setSyncStatus("Đã mở Telegram. Chọn nhóm hoặc cuộc trò chuyện rồi gửi liên kết ứng dụng.");
 });
 
 if (supabase) {
