@@ -1,5 +1,5 @@
 const OFFICIAL_DOMAINS = ["baohiemxahoi.gov.vn", "vssid.gov.vn"];
-const POSTER_ASPECT_RATIO = 881 / 1280;
+export const DEFAULT_GUIDE_URL = "https://baohiemxahoi.gov.vn/";
 
 export function normalizeGuideUrl(value) {
   let url;
@@ -17,30 +17,4 @@ export function normalizeGuideUrl(value) {
   }
 
   return url.href;
-}
-
-export function validateQrPlacement(x, y, size, posterAspectRatio = POSTER_ASPECT_RATIO) {
-  const qrHeightPercent = size * posterAspectRatio;
-  if (
-    !Number.isFinite(x) ||
-    !Number.isFinite(y) ||
-    !Number.isFinite(size) ||
-    x < 0 ||
-    y < 0 ||
-    size < 5 ||
-    x + size > 100 ||
-    y + qrHeightPercent > 100
-  ) {
-    throw new Error("Vị trí và kích thước QR phải nằm gọn trong poster.");
-  }
-}
-
-export function matchesPosterAspectRatio(width, height) {
-  return (
-    Number.isFinite(width) &&
-    Number.isFinite(height) &&
-    width > 0 &&
-    height > 0 &&
-    Math.abs(width / height - POSTER_ASPECT_RATIO) <= 0.005
-  );
 }

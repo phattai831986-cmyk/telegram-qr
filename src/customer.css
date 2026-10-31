@@ -69,17 +69,6 @@ input {
   font-weight: 800;
 }
 
-.admin-link {
-  color: #47647f;
-  font-size: 12px;
-  text-decoration: none;
-}
-
-.admin-link:hover {
-  color: var(--blue);
-  text-decoration: underline;
-}
-
 .customer-content {
   width: min(590px, 100%);
   margin: 37px auto 50px;
