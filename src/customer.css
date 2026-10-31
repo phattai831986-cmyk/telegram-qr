@@ -1,0 +1,263 @@
+:root {
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #17314c;
+  background: #eef5fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --blue: #176bc0;
+  --blue-dark: #104f91;
+  --ink: #17314c;
+  --muted: #6d8195;
+  --line: #dce7f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(210, 231, 248, 0.75), transparent 52%),
+    #eef5fb;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.customer-shell {
+  width: min(940px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.customer-header {
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(201, 218, 231, 0.8);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand strong {
+  color: var(--blue);
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--blue);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.admin-link {
+  color: #47647f;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.admin-link:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.customer-content {
+  width: min(590px, 100%);
+  margin: 37px auto 50px;
+  padding: 27px 30px 24px;
+  border: 1px solid rgba(216, 229, 239, 0.9);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(37, 82, 116, 0.08);
+}
+
+.customer-intro {
+  margin-bottom: 19px;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+.customer-intro h1 {
+  margin-bottom: 7px;
+  color: var(--ink);
+  font-size: clamp(22px, 4vw, 29px);
+  letter-spacing: -0.8px;
+}
+
+.customer-intro > p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.poster-stage {
+  display: flex;
+  justify-content: center;
+  padding: 13px;
+  border: 1px solid #e6edf2;
+  border-radius: 10px;
+  background:
+    linear-gradient(45deg, #f1f5f7 25%, transparent 25%),
+    linear-gradient(-45deg, #f1f5f7 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f5f7 75%),
+    linear-gradient(-45deg, transparent 75%, #f1f5f7 75%),
+    #fff;
+  background-position:
+    0 0,
+    0 6px,
+    6px -6px,
+    -6px 0;
+  background-size: 12px 12px;
+}
+
+.poster-canvas {
+  position: relative;
+  width: min(100%, 390px);
+  overflow: hidden;
+  aspect-ratio: 881 / 1280;
+  background: #f5f9fb;
+  box-shadow: 0 5px 18px rgba(27, 63, 94, 0.12);
+}
+
+.poster-template {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.poster-qr {
+  position: absolute;
+  z-index: 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.customer-actions {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding-top: 16px;
+}
+
+.status-message,
+.destination-note,
+.safety-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.status-message[data-state="error"] {
+  color: #ad3333;
+}
+
+.destination-note {
+  color: #345b7a;
+  font-size: 10px;
+}
+
+.download-button,
+.primary-button,
+.secondary-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--blue);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 140ms ease, transform 140ms ease;
+}
+
+.download-button {
+  width: min(100%, 390px);
+}
+
+.download-button:hover:not(:disabled),
+.primary-button:hover:not(:disabled) {
+  background: var(--blue-dark);
+  transform: translateY(-1px);
+}
+
+.download-button:disabled,
+.primary-button:disabled {
+  background: #a7b9c9;
+  cursor: not-allowed;
+}
+
+.download-button span {
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.safety-note {
+  max-width: 400px;
+  color: #8797a5;
+  font-size: 9px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 540px) {
+  .customer-shell {
+    width: calc(100% - 24px);
+  }
+
+  .customer-header {
+    height: 62px;
+  }
+
+  .customer-content {
+    margin: 19px auto 28px;
+    padding: 19px 13px 17px;
+  }
+
+  .poster-stage {
+    padding: 8px;
+  }
+}
