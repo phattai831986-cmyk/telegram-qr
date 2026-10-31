@@ -102,7 +102,7 @@ function drawQrCornerBrackets(context, x, y, size) {
   const bottom = y + size - inset;
 
   context.save();
-  context.strokeStyle = "#1671ce";
+  context.strokeStyle = "#198754";
   context.lineWidth = 8;
   context.lineCap = "round";
   context.lineJoin = "round";
