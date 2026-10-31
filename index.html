@@ -135,39 +135,29 @@
 
             <div class="poster-wrap">
               <div class="poster" id="poster" aria-live="polite">
-                <div class="poster-top">
-                  <div class="poster-brand"><span class="poster-brand-mark">V</span> VietQR</div>
-                  <span class="poster-label">CHUYỂN KHOẢN</span>
-                </div>
-                <div class="poster-title">Quét mã để<br /><strong>chuyển khoản</strong></div>
-                <div class="poster-bank" id="poster-bank">NGÂN HÀNG CỦA BẠN</div>
-                <div class="poster-qr">
+                <img
+                  class="poster-background"
+                  src="/telegram-qr/transfer-poster-background.png"
+                  alt="Poster nền hướng dẫn BHXH/VssID do người dùng cung cấp"
+                />
+                <div class="poster-qr" id="poster-qr">
                   <div class="qr-placeholder" id="qr-placeholder">
                     <span class="qr-placeholder-icon" aria-hidden="true">▦</span>
                     <span>Mã QR sẽ hiển thị ở đây</span>
                   </div>
                   <img id="qr-image" alt="" hidden />
                 </div>
-                <div class="poster-recipient">
+                <div class="poster-recipient" id="poster-recipient">
                   <p class="recipient-label">CHỦ TÀI KHOẢN</p>
                   <p class="recipient-name" id="poster-name">Tên chủ tài khoản</p>
                   <p class="recipient-account" id="poster-account">Số tài khoản</p>
                 </div>
-                <div class="poster-payment" id="poster-payment" hidden>
-                  <div id="poster-amount-wrap" hidden><span>SỐ TIỀN</span><strong id="poster-amount"></strong></div>
-                  <div id="poster-description-wrap" hidden><span>NỘI DUNG</span><strong id="poster-description"></strong></div>
-                </div>
-                <div class="poster-bottom">
-                  <span class="scan-dot" aria-hidden="true"></span>
-                  Mở ứng dụng ngân hàng và quét mã
-                </div>
-                <div class="poster-decoration" aria-hidden="true"></div>
               </div>
             </div>
             <button class="download-button" id="download-button" type="button" disabled>
               <span aria-hidden="true">↓</span> Tải poster PNG
             </button>
-            <p class="preview-footnote">Poster được xuất ở độ phân giải cao, sẵn sàng để chia sẻ.</p>
+            <p class="preview-footnote">Ảnh nền BHXH bạn chọn được giữ nguyên; QR và tên chủ tài khoản đặt trong khung trống.</p>
           </section>
         </div>
 

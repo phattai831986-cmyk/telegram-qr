@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import { BANKS } from "./banks.js";
-import { createVietQrPayload, formatVnd } from "./vietqr.js";
+import { createVietQrPayload } from "./vietqr.js";
 import "./style.css";
 
 const form = document.querySelector("#transfer-form");
@@ -10,15 +10,13 @@ const qrImage = document.querySelector("#qr-image");
 const qrPlaceholder = document.querySelector("#qr-placeholder");
 const downloadButton = document.querySelector("#download-button");
 const elements = {
-  bank: document.querySelector("#poster-bank"),
   name: document.querySelector("#poster-name"),
   account: document.querySelector("#poster-account"),
-  payment: document.querySelector("#poster-payment"),
-  amountWrap: document.querySelector("#poster-amount-wrap"),
-  amount: document.querySelector("#poster-amount"),
-  descriptionWrap: document.querySelector("#poster-description-wrap"),
-  description: document.querySelector("#poster-description"),
 };
+const posterQr = document.querySelector("#poster-qr");
+const posterRecipient = document.querySelector("#poster-recipient");
+const QR_POSITION = { left: 0.34, top: 0.425, size: 0.32 };
+const POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background.png`;
 let currentPosterData = null;
 
 for (const bank of BANKS) {
@@ -34,17 +32,16 @@ function resetPoster() {
   qrImage.alt = "";
   qrImage.hidden = true;
   qrPlaceholder.hidden = false;
-  elements.bank.textContent = "NGÂN HÀNG CỦA BẠN";
   elements.name.textContent = "Tên chủ tài khoản";
   elements.account.textContent = "Số tài khoản";
-  elements.amount.textContent = "";
-  elements.description.textContent = "";
-  elements.amountWrap.hidden = true;
-  elements.descriptionWrap.hidden = true;
-  elements.payment.hidden = true;
+  posterQr.style.left = `${QR_POSITION.left * 100}%`;
+  posterQr.style.top = `${QR_POSITION.top * 100}%`;
+  posterQr.style.width = `${QR_POSITION.size * 100}%`;
+  posterRecipient.hidden = true;
   downloadButton.disabled = true;
 }
 
+resetPoster();
 form.addEventListener("input", resetPoster);
 form.addEventListener("change", resetPoster);
 
@@ -74,14 +71,12 @@ function readTransferDetails() {
 }
 
 function updatePoster(details, qrDataUrl) {
-  elements.bank.textContent = details.bank.name.toLocaleUpperCase("vi-VN");
   elements.name.textContent = details.accountName;
   elements.account.textContent = details.accountNumber;
-  elements.amount.textContent = formatVnd(details.amount);
-  elements.description.textContent = details.description;
-  elements.amountWrap.hidden = !details.amount;
-  elements.descriptionWrap.hidden = !details.description;
-  elements.payment.hidden = !details.amount && !details.description;
+  posterQr.style.left = `${QR_POSITION.left * 100}%`;
+  posterQr.style.top = `${QR_POSITION.top * 100}%`;
+  posterQr.style.width = `${QR_POSITION.size * 100}%`;
+  posterRecipient.hidden = false;
   qrImage.src = qrDataUrl;
   qrImage.alt = `Mã VietQR chuyển khoản đến ${details.accountName}, ${details.bank.name}`;
   qrImage.hidden = false;
@@ -110,39 +105,6 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-function roundedRect(context, x, y, width, height, radius) {
-  context.beginPath();
-  context.roundRect(x, y, width, height, radius);
-}
-
-function drawQrCornerBrackets(context, x, y, size) {
-  const inset = 13;
-  const length = 35;
-  const right = x + size - inset;
-  const bottom = y + size - inset;
-
-  context.save();
-  context.strokeStyle = "#198754";
-  context.lineWidth = 8;
-  context.lineCap = "round";
-  context.lineJoin = "round";
-  context.beginPath();
-  context.moveTo(x + inset + length, y + inset);
-  context.lineTo(x + inset, y + inset);
-  context.lineTo(x + inset, y + inset + length);
-  context.moveTo(right - length, y + inset);
-  context.lineTo(right, y + inset);
-  context.lineTo(right, y + inset + length);
-  context.moveTo(x + inset, bottom - length);
-  context.lineTo(x + inset, bottom);
-  context.lineTo(x + inset + length, bottom);
-  context.moveTo(right, bottom - length);
-  context.lineTo(right, bottom);
-  context.lineTo(right - length, bottom);
-  context.stroke();
-  context.restore();
-}
-
 function drawPosterText(context, text, x, y, maxWidth, font) {
   context.font = font;
   let displayText = text;
@@ -153,58 +115,26 @@ function drawPosterText(context, text, x, y, maxWidth, font) {
 }
 
 async function createPosterPng({ details, qrDataUrl }) {
+  const background = new Image();
+  background.src = POSTER_BACKGROUND;
+  await new Promise((resolve, reject) => {
+    if (background.complete && background.naturalWidth) {
+      resolve();
+      return;
+    }
+    background.addEventListener("load", resolve, { once: true });
+    background.addEventListener("error", () => reject(new Error("Không tải được ảnh nền poster.")), {
+      once: true,
+    });
+  });
+
   const canvas = document.createElement("canvas");
-  canvas.width = 1000;
-  canvas.height = 1420;
+  canvas.width = background.naturalWidth;
+  canvas.height = background.naturalHeight;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Trình duyệt không hỗ trợ xuất poster.");
 
-  context.fillStyle = "#f2f7f3";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "#dceee1";
-  context.beginPath();
-  context.arc(1000, 0, 290, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = "#e5f1e8";
-  context.beginPath();
-  context.arc(0, 1420, 260, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = "#fff";
-  roundedRect(context, 82, 62, 836, 1296, 40);
-  context.fill();
-
-  context.fillStyle = "#198754";
-  roundedRect(context, 130, 112, 60, 60, 18);
-  context.fill();
-  context.fillStyle = "#fff";
-  context.font = "bold 36px Arial, sans-serif";
-  context.textAlign = "center";
-  context.fillText("V", 160, 153);
-  context.textAlign = "left";
-  context.fillStyle = "#173b2e";
-  context.font = "bold 30px Arial, sans-serif";
-  context.fillText("VietQR", 205, 151);
-  context.fillStyle = "#73877d";
-  context.font = "bold 16px Arial, sans-serif";
-  context.textAlign = "right";
-  context.fillText("CHUYỂN KHOẢN", 870, 149);
-  context.textAlign = "left";
-
-  context.fillStyle = "#183d30";
-  context.font = "42px Arial, sans-serif";
-  context.fillText("Quét mã để", 130, 252);
-  context.font = "bold 54px Arial, sans-serif";
-  context.fillText("chuyển khoản", 130, 319);
-
-  context.fillStyle = "#eaf5ed";
-  roundedRect(context, 130, 356, 740, 54, 15);
-  context.fill();
-  context.fillStyle = "#21804e";
-  context.font = "bold 20px Arial, sans-serif";
-  context.textAlign = "center";
-  context.fillText(details.bank.name.toLocaleUpperCase("vi-VN"), 500, 391);
-  context.textAlign = "left";
+  context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
   const qr = new Image();
   qr.src = qrDataUrl;
@@ -212,54 +142,22 @@ async function createPosterPng({ details, qrDataUrl }) {
     qr.onload = resolve;
     qr.onerror = () => reject(new Error("Không thể tải mã QR để xuất poster."));
   });
-  context.fillStyle = "#fff";
-  roundedRect(context, 328, 437, 344, 344, 20);
-  context.fill();
-  drawQrCornerBrackets(context, 328, 437, 344);
-  context.drawImage(qr, 350, 459, 300, 300);
+  const qrSize = canvas.width * QR_POSITION.size;
+  const qrX = canvas.width * QR_POSITION.left;
+  const qrY = canvas.height * QR_POSITION.top;
+  context.drawImage(qr, qrX, qrY, qrSize, qrSize);
 
-  context.fillStyle = "#75877e";
-  context.font = "bold 15px Arial, sans-serif";
-  context.fillText("CHỦ TÀI KHOẢN", 150, 837);
+  context.textAlign = "center";
+  context.fillStyle = "#475e7d";
+  context.font = `bold ${Math.round(canvas.width * 0.014)}px Arial, sans-serif`;
+  context.fillText("CHỦ TÀI KHOẢN", canvas.width / 2, canvas.height * 0.666);
   context.fillStyle = "#173b2e";
-  drawPosterText(context, details.accountName, 150, 884, 700, "bold 30px Arial, sans-serif");
+  context.font = `bold ${Math.round(canvas.width * 0.023)}px Arial, sans-serif`;
+  drawPosterText(context, details.accountName, canvas.width / 2, canvas.height * 0.682, canvas.width * 0.39, context.font);
   context.fillStyle = "#53685d";
-  context.font = "22px Arial, sans-serif";
-  context.fillText(details.accountNumber, 150, 924);
-
-  let detailY = 980;
-  if (details.amount) {
-    context.fillStyle = "#f5f9f6";
-    roundedRect(context, 130, detailY, 740, 76, 14);
-    context.fill();
-    context.fillStyle = "#75877e";
-    context.font = "bold 14px Arial, sans-serif";
-    context.fillText("SỐ TIỀN", 154, detailY + 29);
-    context.fillStyle = "#198754";
-    context.font = "bold 24px Arial, sans-serif";
-    context.fillText(formatVnd(details.amount), 154, detailY + 58);
-    detailY += 92;
-  }
-  if (details.description) {
-    context.fillStyle = "#f5f9f6";
-    roundedRect(context, 130, detailY, 740, 76, 14);
-    context.fill();
-    context.fillStyle = "#75877e";
-    context.font = "bold 14px Arial, sans-serif";
-    context.fillText("NỘI DUNG", 154, detailY + 29);
-    context.fillStyle = "#173b2e";
-    drawPosterText(context, details.description, 154, detailY + 57, 690, "bold 20px Arial, sans-serif");
-  }
-
-  context.fillStyle = "#e6eee8";
-  context.fillRect(130, 1254, 740, 1);
-  context.fillStyle = "#21804e";
-  context.beginPath();
-  context.arc(151, 1295, 7, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = "#53685d";
-  context.font = "18px Arial, sans-serif";
-  context.fillText("Mở ứng dụng ngân hàng và quét mã", 172, 1301);
+  context.font = `${Math.round(canvas.width * 0.018)}px Arial, sans-serif`;
+  drawPosterText(context, details.accountNumber, canvas.width / 2, canvas.height * 0.699, canvas.width * 0.39, context.font);
+  context.textAlign = "left";
 
   return canvas.toDataURL("image/png");
 }
