@@ -2,6 +2,7 @@ import QRCode from "qrcode";
 import { BANKS } from "./banks.js";
 import { createVietQrPayload } from "./vietqr.js";
 import { supabase, supabaseConfigured } from "./supabase.js";
+import { initializeTelegramMiniApp } from "./telegram.js";
 import "./style.css";
 
 const form = document.querySelector("#transfer-form");
@@ -25,12 +26,32 @@ const elements = {
 };
 const posterQr = document.querySelector("#poster-qr");
 const posterRecipient = document.querySelector("#poster-recipient");
+const telegramApp = initializeTelegramMiniApp();
+const telegramMainButton = telegramApp?.MainButton;
 const QR_POSITION = { left: 0.34, top: 0.425, size: 0.32 };
 const POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background.png`;
 let currentPosterData = null;
 let currentPosterBlob = null;
 let currentUser = null;
+let isGenerating = false;
 const POSTER_BUCKET = "transfer-posters";
+
+function updateTelegramMainButton() {
+  if (!telegramMainButton) return;
+  telegramMainButton.setText(currentPosterData ? "Tải poster PNG" : "Tạo mã QR chuyển khoản");
+  if (isGenerating) telegramMainButton.disable();
+  else telegramMainButton.enable();
+  telegramMainButton.show();
+}
+
+if (telegramMainButton?.onClick) {
+  telegramMainButton.onClick(() => {
+    if (isGenerating) return;
+    if (currentPosterData) downloadButton.click();
+    else form.requestSubmit();
+  });
+  updateTelegramMainButton();
+}
 
 function setSyncStatus(message, isError = false) {
   syncStatus.textContent = message;
@@ -78,6 +99,7 @@ function resetPoster() {
   posterQr.style.width = `${QR_POSITION.size * 100}%`;
   posterRecipient.hidden = true;
   downloadButton.disabled = true;
+  updateTelegramMainButton();
   updateSyncControls();
 }
 
@@ -338,12 +360,15 @@ function updatePoster(details, qrDataUrl) {
   downloadButton.disabled = false;
   currentPosterData = { details, qrDataUrl };
   currentPosterBlob = null;
+  updateTelegramMainButton();
   updateSyncControls();
 }
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   errorMessage.hidden = true;
+  isGenerating = true;
+  updateTelegramMainButton();
   try {
     const details = readTransferDetails();
     const payload = createVietQrPayload(details);
@@ -360,6 +385,9 @@ form.addEventListener("submit", async (event) => {
     errorMessage.textContent =
       error instanceof Error ? error.message : "Không thể tạo mã QR. Vui lòng thử lại.";
     errorMessage.hidden = false;
+  } finally {
+    isGenerating = false;
+    updateTelegramMainButton();
   }
 });
 

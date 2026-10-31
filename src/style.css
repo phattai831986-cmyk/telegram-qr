@@ -14,6 +14,7 @@
   --ink: #20362d;
   --muted: #77867e;
   --line: #e4ebe6;
+  --tg-background-color: #f3f7f4;
 }
 
 * {
@@ -22,11 +23,11 @@
 
 body {
   min-width: 320px;
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   margin: 0;
   background:
     radial-gradient(ellipse at 85% 8%, rgba(219, 239, 224, 0.58), transparent 34%),
-    #f3f7f4;
+    var(--tg-background-color, #f3f7f4);
 }
 
 button,
@@ -37,7 +38,7 @@ select {
 
 .app-shell {
   width: min(1180px, calc(100% - 64px));
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   margin: 0 auto;
 }
 
@@ -725,7 +726,7 @@ h1 {
   justify-content: space-between;
   gap: 15px;
   margin-top: 22px;
-  padding: 15px 0 18px;
+  padding: 15px 0 max(18px, env(safe-area-inset-bottom));
   border-top: 1px solid #e3eae4;
   color: #89958e;
   font-size: 9px;
