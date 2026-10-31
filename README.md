@@ -1,11 +1,8 @@
-# VietQR Studio
+# Hướng dẫn BHXH số
 
-Ứng dụng tạo mã QR chuyển khoản ngân hàng VietQR và poster PNG có thể chia sẻ. Chọn ngân hàng,
-nhập số tài khoản và tên chủ tài khoản; số tiền và nội dung chuyển khoản là tùy chọn.
-
-Thông tin được xử lý ngay trong trình duyệt. QR được tạo từ dữ liệu chuyển khoản theo định dạng
-VietQR/NAPAS; ứng dụng không gửi hoặc lưu thông tin tài khoản. Danh sách ngân hàng hiện hỗ trợ
-được khai báo trong `src/banks.js`.
+Trang khách hiển thị poster hướng dẫn BHXH/VssID với mã QR dẫn đến trang chủ chính thức
+`https://baohiemxahoi.gov.vn/`. Không cần trang quản trị, tài khoản, Supabase hoặc cấu hình
+bí mật. Người dùng có thể tải poster đã ghép mã QR dưới dạng PNG.
 
 ## Chạy ứng dụng
 
@@ -14,11 +11,16 @@ npm install
 npm run dev
 ```
 
-Tạo bản production bằng `npm run build`; chạy kiểm thử định dạng QR bằng `npm test`.
+Mã QR hiện dẫn đến trang chủ BHXH Việt Nam. Vị trí QR được đặt cố định trên ảnh poster
+`public/bhxh-guide-template.png`.
 
-## Triển khai GitHub Pages
+## Kiểm tra và triển khai
 
-Workflow `.github/workflows/deploy-pages.yml` tự build và triển khai khi có commit mới lên
-`main` hoặc khi chạy thủ công từ tab Actions. Nếu GitHub Pages chưa được bật cho repository,
-vào **Settings → Pages** và chọn **GitHub Actions** làm nguồn triển khai. Sau khi workflow chạy
-thành công, website sẽ có tại `https://phattai831986-cmyk.github.io/telegram-qr/`.
+```sh
+npm run build
+npm test
+```
+
+Workflow `.github/workflows/deploy-pages.yml` chạy build/test trên pull request và triển khai
+GitHub Pages khi có commit lên `main` hoặc khi chạy thủ công. Website:
+`https://phattai831986-cmyk.github.io/telegram-qr/`.
