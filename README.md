@@ -26,8 +26,10 @@ Không dùng khóa `service_role` trong trình duyệt.
 
 ## Cấu hình đồng bộ Supabase
 
-1. Tạo project Supabase, rồi chạy `supabase/migrations/20261101035254_private_transfer_sync.sql`
-   trong **SQL Editor**.
+1. Tạo project Supabase, rồi chạy lần lượt các migration
+   `supabase/migrations/20261101035254_private_transfer_sync.sql` và
+   `supabase/migrations/20261101050000_multiple_transfer_profiles.sql` trong **SQL Editor**.
+   Nếu đã chạy migration đầu tiên, chỉ cần chạy migration thứ hai để nâng cấp danh sách tài khoản.
 2. Trong **Authentication → URL Configuration**, thêm địa chỉ GitHub Pages vào danh sách
    **Redirect URLs**. Bật xác nhận email nếu muốn yêu cầu người dùng xác minh email.
 3. Sao chép Project URL và anon/publishable key (không phải `service_role`) vào `.env` khi chạy
@@ -35,6 +37,11 @@ Không dùng khóa `service_role` trong trình duyệt.
    `VITE_SUPABASE_URL` và `VITE_SUPABASE_ANON_KEY` để bật đăng nhập trên website.
 4. Tạo tài khoản bằng email và mật khẩu ở mục “Lưu tài khoản và poster”. Đăng nhập cùng tài khoản
    trên thiết bị khác để tải thông tin và poster đã lưu.
+
+Bạn có thể lưu nhiều tài khoản ngân hàng. Chọn “Tài khoản cố định” để luôn dùng tài khoản mặc định;
+chọn “Tài khoản tùy chọn” để đổi giữa các tài khoản đã lưu. Đặt tài khoản đang chọn làm mặc định
+bằng nút “Đặt làm tài khoản cố định”. Mỗi người dùng chỉ có thể xem và thay đổi danh sách tài khoản
+của chính mình.
 
 RLS giới hạn hồ sơ và ảnh poster trong tài khoản đã đăng nhập; bucket ảnh là riêng tư. Nút chia sẻ
 mở bảng chia sẻ của thiết bị để gửi ảnh qua Telegram hoặc ứng dụng khác nếu trình duyệt hỗ trợ.

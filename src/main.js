@@ -7,12 +7,14 @@ import "./style.css";
 
 const form = document.querySelector("#transfer-form");
 const bankSelect = document.querySelector("#bank");
+const accountModeSelect = document.querySelector("#account-mode");
+const savedAccountSelect = document.querySelector("#saved-account");
 const errorMessage = document.querySelector("#form-error");
 const qrImage = document.querySelector("#qr-image");
 const qrPlaceholder = document.querySelector("#qr-placeholder");
 const downloadButton = document.querySelector("#download-button");
 const saveAccountButton = document.querySelector("#save-account-button");
-const restoreAccountButton = document.querySelector("#restore-account-button");
+const setDefaultAccountButton = document.querySelector("#set-default-account-button");
 const savePosterButton = document.querySelector("#save-poster-button");
 const restorePosterButton = document.querySelector("#restore-poster-button");
 const sharePosterButton = document.querySelector("#share-poster-button");
@@ -34,6 +36,8 @@ let currentPosterData = null;
 let currentPosterBlob = null;
 let currentUser = null;
 let isGenerating = false;
+let savedProfiles = [];
+let selectedProfileId = null;
 const POSTER_BUCKET = "transfer-posters";
 
 function updateTelegramMainButton() {
@@ -61,6 +65,9 @@ function setSyncStatus(message, isError = false) {
 function updateSyncControls() {
   const signedIn = Boolean(currentUser);
   const hasTransfer = Boolean(currentPosterData);
+  const selectedProfile = savedProfiles.find((profile) => profile.id === selectedProfileId);
+  const defaultProfile = savedProfiles.find((profile) => profile.is_default);
+  const activeProfile = accountModeSelect.value === "fixed" ? defaultProfile : selectedProfile;
   authForm.querySelector("#auth-email").disabled = signedIn || !supabaseConfigured;
   authForm.querySelector("#auth-password").disabled = signedIn || !supabaseConfigured;
   authForm.querySelector("#sign-in-button").hidden = signedIn;
@@ -69,7 +76,12 @@ function updateSyncControls() {
   signUpButton.disabled = !supabaseConfigured;
   signOutButton.hidden = !signedIn;
   saveAccountButton.disabled = !signedIn;
-  restoreAccountButton.disabled = !signedIn;
+  savedAccountSelect.disabled =
+    !signedIn || savedProfiles.length === 0 || accountModeSelect.value === "fixed";
+  setDefaultAccountButton.disabled = !signedIn || !selectedProfile || selectedProfile.is_default;
+  for (const control of [bankSelect, form.elements.accountNumber, form.elements.accountName]) {
+    control.disabled = Boolean(activeProfile);
+  }
   savePosterButton.disabled = !signedIn || !hasTransfer;
   restorePosterButton.disabled = !signedIn;
   sharePosterButton.disabled = !hasTransfer;
@@ -104,33 +116,97 @@ function resetPoster() {
 }
 
 resetPoster();
-form.addEventListener("input", resetPoster);
-form.addEventListener("change", resetPoster);
+for (const control of [
+  bankSelect,
+  form.elements.accountNumber,
+  form.elements.accountName,
+  form.elements.amount,
+  form.elements.description,
+]) {
+  control.addEventListener("input", resetPoster);
+  control.addEventListener("change", resetPoster);
+}
 
 function fillTransferForm(profile) {
-  bankSelect.value = profile.bank_bin;
-  form.elements.accountNumber.value = profile.account_number;
-  form.elements.accountName.value = profile.account_name;
-  form.elements.amount.value = profile.amount ?? "";
-  form.elements.description.value = profile.description ?? "";
+  selectedProfileId = profile?.id ?? null;
+  savedAccountSelect.value = profile?.id ?? "new";
+  const disabled = Boolean(profile);
+  bankSelect.disabled = disabled;
+  form.elements.accountNumber.disabled = disabled;
+  form.elements.accountName.disabled = disabled;
+  bankSelect.value = profile?.bank_bin ?? "";
+  form.elements.accountNumber.value = profile?.account_number ?? "";
+  form.elements.accountName.value = profile?.account_name ?? "";
+  form.elements.amount.value = profile?.amount ?? "";
+  form.elements.description.value = profile?.description ?? "";
   resetPoster();
 }
 
-async function loadSavedProfile() {
+function renderSavedProfiles() {
+  savedAccountSelect.replaceChildren();
+  const newOption = document.createElement("option");
+  newOption.value = "new";
+  newOption.textContent = "Nhập tài khoản mới…";
+  savedAccountSelect.append(newOption);
+
+  for (const profile of savedProfiles) {
+    const bank = BANKS.find((item) => item.bin === profile.bank_bin);
+    const option = document.createElement("option");
+    option.value = profile.id;
+    option.textContent = `${bank?.name ?? profile.bank_bin} · ${profile.account_number} · ${profile.account_name}${profile.is_default ? " (Mặc định)" : ""}`;
+    savedAccountSelect.append(option);
+  }
+
+  if (accountModeSelect.value === "fixed") {
+    fillTransferForm(savedProfiles.find((profile) => profile.is_default) ?? null);
+  } else {
+    fillTransferForm(savedProfiles.find((profile) => profile.id === selectedProfileId) ?? null);
+  }
+  updateSyncControls();
+}
+
+async function loadSavedProfiles() {
   if (!currentUser || !supabase) return;
   const { data, error } = await supabase
     .from("transfer_profiles")
-    .select("bank_bin,account_number,account_name,amount,description")
+    .select("id,bank_bin,account_number,account_name,amount,description,is_default")
     .eq("user_id", currentUser.id)
-    .maybeSingle();
+    .order("is_default", { ascending: false })
+    .order("account_name", { ascending: true });
   if (error) throw error;
-  if (!data) {
-    setSyncStatus("Đã đăng nhập. Chưa có thông tin tài khoản nào được lưu.");
-    return;
+  savedProfiles = data ?? [];
+  renderSavedProfiles();
+
+  if (savedProfiles.length === 0) {
+    setSyncStatus("Đã đăng nhập. Lưu tài khoản để đặt tài khoản cố định hoặc chọn nhiều tài khoản.");
+  } else if (!savedProfiles.some((profile) => profile.is_default)) {
+    accountModeSelect.value = "optional";
+    fillTransferForm(savedProfiles[0]);
+    setSyncStatus("Chọn một tài khoản đã lưu hoặc đặt tài khoản đang chọn làm tài khoản cố định.");
+  } else {
+    setSyncStatus("Đã tải danh sách tài khoản riêng tư. Chọn chế độ cố định hoặc tùy chọn.");
   }
-  fillTransferForm(data);
-  setSyncStatus("Đã tải thông tin tài khoản đã lưu. Nhấn “Tạo mã QR” để xem lại poster.");
 }
+
+accountModeSelect.addEventListener("change", () => {
+  if (accountModeSelect.value === "fixed") {
+    const defaultProfile = savedProfiles.find((profile) => profile.is_default);
+    if (currentUser && savedProfiles.length > 0 && !defaultProfile) {
+      accountModeSelect.value = "optional";
+      setSyncStatus("Chọn một tài khoản rồi đặt làm mặc định trước khi dùng chế độ cố định.", true);
+      return;
+    }
+    fillTransferForm(defaultProfile ?? null);
+  } else {
+    fillTransferForm(savedProfiles.find((profile) => profile.id === selectedProfileId) ?? null);
+  }
+  updateSyncControls();
+});
+
+savedAccountSelect.addEventListener("change", () => {
+  fillTransferForm(savedProfiles.find((profile) => profile.id === savedAccountSelect.value) ?? null);
+  updateSyncControls();
+});
 
 async function loadSavedPoster({ download = false } = {}) {
   if (!currentUser || !supabase) return null;
@@ -174,7 +250,7 @@ authForm.addEventListener("submit", async (event) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     authForm.elements.password.value = "";
-    setSyncStatus("Đã đăng nhập. Đang tải thông tin đã lưu…");
+    setSyncStatus("Đã đăng nhập. Đang tải danh sách tài khoản…");
   } catch (error) {
     setSyncStatus(error instanceof Error ? error.message : "Không thể đăng nhập.", true);
   } finally {
@@ -219,17 +295,31 @@ saveAccountButton.addEventListener("click", async () => {
   saveAccountButton.disabled = true;
   try {
     const details = readTransferDetails();
-    const { error } = await supabase.from("transfer_profiles").upsert({
-      user_id: currentUser.id,
-      bank_bin: details.bank.bin,
-      account_number: details.accountNumber,
-      account_name: details.accountName,
-      amount: details.amount,
-      description: details.description,
-      updated_at: new Date().toISOString(),
-    });
+    const { data, error } = await supabase
+      .from("transfer_profiles")
+      .upsert(
+        {
+          user_id: currentUser.id,
+          bank_bin: details.bank.bin,
+          account_number: details.accountNumber,
+          account_name: details.accountName,
+          amount: details.amount,
+          description: details.description,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,bank_bin,account_number" },
+      )
+      .select("id,is_default")
+      .single();
     if (error) throw error;
-    setSyncStatus("Đã lưu thông tin tài khoản riêng tư vào tài khoản Supabase của bạn.");
+    await loadSavedProfiles();
+    accountModeSelect.value = savedProfiles.some((profile) => profile.is_default) ? "optional" : "fixed";
+    fillTransferForm(savedProfiles.find((profile) => profile.id === data.id));
+    if (!savedProfiles.some((profile) => profile.is_default)) {
+      await setDefaultAccount(data.id);
+    } else {
+      setSyncStatus("Đã lưu tài khoản riêng tư. Có thể lưu thêm tài khoản để chọn ở chế độ tùy chọn.");
+    }
   } catch (error) {
     setSyncStatus(error instanceof Error ? error.message : "Không thể lưu thông tin tài khoản.", true);
   } finally {
@@ -237,12 +327,22 @@ saveAccountButton.addEventListener("click", async () => {
   }
 });
 
-restoreAccountButton.addEventListener("click", async () => {
-  restoreAccountButton.disabled = true;
+async function setDefaultAccount(profileId) {
+  if (!supabase) return;
+  const { error } = await supabase.rpc("set_default_transfer_profile", { profile_id: profileId });
+  if (error) throw error;
+  accountModeSelect.value = "fixed";
+  await loadSavedProfiles();
+  setSyncStatus("Đã đặt tài khoản cố định mặc định.");
+}
+
+setDefaultAccountButton.addEventListener("click", async () => {
+  if (!selectedProfileId) return;
+  setDefaultAccountButton.disabled = true;
   try {
-    await loadSavedProfile();
+    await setDefaultAccount(selectedProfileId);
   } catch (error) {
-    setSyncStatus(error instanceof Error ? error.message : "Không thể tải thông tin đã lưu.", true);
+    setSyncStatus(error instanceof Error ? error.message : "Không thể đặt tài khoản mặc định.", true);
   } finally {
     updateSyncControls();
   }
@@ -305,17 +405,20 @@ sharePosterButton.addEventListener("click", async () => {
 if (supabase) {
   supabase.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user ?? null;
-    updateSyncControls();
-    if (currentUser) {
-      setSyncStatus(`Đã đăng nhập: ${currentUser.email}. Đang kiểm tra dữ liệu đã lưu…`);
-      window.setTimeout(() => {
-        loadSavedProfile().catch((error) =>
-          setSyncStatus(error instanceof Error ? error.message : "Không thể tải dữ liệu.", true),
-        );
-      }, 0);
-    } else {
+    if (!currentUser) {
+      savedProfiles = [];
+      selectedProfileId = null;
+      renderSavedProfiles();
       setSyncStatus("Đăng nhập để lưu riêng tư và đồng bộ trên các thiết bị.");
+      return;
     }
+    updateSyncControls();
+    setSyncStatus(`Đã đăng nhập: ${currentUser.email}. Đang tải danh sách tài khoản…`);
+    window.setTimeout(() => {
+      loadSavedProfiles().catch((error) =>
+        setSyncStatus(error instanceof Error ? error.message : "Không thể tải dữ liệu.", true),
+      );
+    }, 0);
   });
 } else {
   updateSyncControls();
@@ -323,9 +426,9 @@ if (supabase) {
 
 function readTransferDetails() {
   const formData = new FormData(form);
-  const bank = BANKS.find((item) => item.bin === formData.get("bank"));
-  const accountNumber = String(formData.get("accountNumber")).trim();
-  const accountName = String(formData.get("accountName")).trim().toLocaleUpperCase("vi-VN");
+  const bank = BANKS.find((item) => item.bin === bankSelect.value);
+  const accountNumber = form.elements.accountNumber.value.trim();
+  const accountName = form.elements.accountName.value.trim().toLocaleUpperCase("vi-VN");
   const amount = String(formData.get("amount")).trim();
   const description = String(formData.get("description")).trim();
 

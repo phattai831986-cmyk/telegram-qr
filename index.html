@@ -79,15 +79,20 @@
 
             <form id="transfer-form" novalidate>
               <fieldset class="mode-fieldset">
-                <legend>Loại tài khoản</legend>
-                <div class="mode-option" aria-current="true">
-                  <span class="radio-indicator" aria-hidden="true"></span>
-                  <span class="mode-copy"><strong>Tài khoản ngân hàng</strong><small>Chuyển khoản qua VietQR</small></span>
-                  <span class="mode-icon" aria-hidden="true">▤</span>
-                </div>
+                <legend>Chế độ</legend>
+                <select id="account-mode" name="accountMode">
+                  <option value="fixed">Tài khoản cố định</option>
+                  <option value="optional">Tài khoản tùy chọn</option>
+                </select>
               </fieldset>
 
               <div class="form-grid">
+                <div class="form-field full-width">
+                  <label for="saved-account">Tài khoản đã lưu</label>
+                  <select id="saved-account" name="savedAccount" disabled>
+                    <option value="new">Nhập tài khoản mới…</option>
+                  </select>
+                </div>
                 <div class="form-field full-width">
                   <label for="bank">Ngân hàng <span class="required">*</span></label>
                   <select id="bank" name="bank" required>
@@ -153,9 +158,9 @@
               </button>
               <div class="storage-actions">
                 <button class="storage-button" id="save-account-button" type="button" disabled>Lưu thông tin tài khoản</button>
-                <button class="storage-button" id="restore-account-button" type="button" disabled>Tải thông tin đã lưu</button>
+                <button class="storage-button" id="set-default-account-button" type="button" disabled>Đặt làm tài khoản cố định</button>
               </div>
-              <p class="form-footnote"><span aria-hidden="true">▣</span> QR tạo ngay trên trình duyệt; chỉ lưu thông tin lên đám mây khi bạn chọn lưu.</p>
+              <p class="form-footnote"><span aria-hidden="true">▣</span> Lưu các tài khoản riêng tư sau khi đăng nhập. Chế độ cố định dùng tài khoản mặc định; chế độ tùy chọn cho phép chọn tài khoản đã lưu.</p>
             </form>
           </section>
 

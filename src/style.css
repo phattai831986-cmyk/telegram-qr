@@ -434,6 +434,7 @@ h1 {
 
 .form-field input,
 .form-field select,
+.mode-fieldset select,
 .input-with-suffix {
   width: 100%;
   min-width: 0;
@@ -447,7 +448,8 @@ h1 {
 }
 
 .form-field input,
-.form-field select {
+.form-field select,
+.mode-fieldset select {
   padding: 0 11px;
   outline: none;
 }
@@ -458,16 +460,25 @@ h1 {
 
 .form-field input:focus,
 .form-field select:focus,
+.mode-fieldset select:focus,
 .input-with-suffix:focus-within {
   border-color: #79b88c;
   box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.1);
 }
 
-.form-field select {
+.form-field select,
+.mode-fieldset select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 1.5 5 5 5-5' stroke='%2377867e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
+}
+
+.form-field input:disabled,
+.form-field select:disabled {
+  color: #64746a;
+  background-color: #f2f5f3;
+  cursor: not-allowed;
 }
 
 .input-with-suffix {
