@@ -17,7 +17,7 @@
           <span class="brand-mark" aria-hidden="true">V</span>
           <span>VietQR <strong>Studio</strong></span>
         </a>
-        <span class="private-badge"><span aria-hidden="true"></span> Tạo mã an toàn trên thiết bị</span>
+        <span class="private-badge"><span aria-hidden="true"></span> QR tạo an toàn trên thiết bị</span>
       </header>
 
       <section class="workspace" aria-labelledby="page-title">
@@ -35,6 +35,36 @@
             <span class="step"><b>3</b> Tải poster</span>
           </div>
         </div>
+
+        <details class="sync-panel" id="sync-panel">
+          <summary>Lưu tài khoản và poster để dùng trên thiết bị khác</summary>
+          <div class="sync-content">
+            <p class="sync-copy">
+              Đăng nhập để đồng bộ thông tin chuyển khoản và poster riêng tư qua Supabase. Chỉ tài khoản của bạn
+              mới truy cập được dữ liệu đã lưu.
+            </p>
+            <form id="auth-form" class="auth-form">
+              <label class="sr-only" for="auth-email">Email</label>
+              <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="Email" required />
+              <label class="sr-only" for="auth-password">Mật khẩu</label>
+              <input
+                id="auth-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Mật khẩu (ít nhất 8 ký tự)"
+                minlength="8"
+                required
+              />
+              <div class="auth-actions">
+                <button class="auth-button" id="sign-in-button" type="submit">Đăng nhập</button>
+                <button class="auth-button secondary-auth-button" id="sign-up-button" type="button">Tạo tài khoản</button>
+                <button class="auth-button secondary-auth-button" id="sign-out-button" type="button" hidden>Đăng xuất</button>
+              </div>
+            </form>
+            <p class="sync-status" id="sync-status" role="status">Đang kiểm tra cấu hình đồng bộ…</p>
+          </div>
+        </details>
 
         <div class="studio-layout">
           <section class="form-card" aria-labelledby="form-title">
@@ -120,7 +150,11 @@
               <button class="create-button" type="submit">
                 <span>Tạo mã QR chuyển khoản</span><span aria-hidden="true">→</span>
               </button>
-              <p class="form-footnote"><span aria-hidden="true">▣</span> Mã QR được tạo ngay trên trình duyệt, không lưu thông tin.</p>
+              <div class="storage-actions">
+                <button class="storage-button" id="save-account-button" type="button" disabled>Lưu thông tin tài khoản</button>
+                <button class="storage-button" id="restore-account-button" type="button" disabled>Tải thông tin đã lưu</button>
+              </div>
+              <p class="form-footnote"><span aria-hidden="true">▣</span> QR tạo ngay trên trình duyệt; chỉ lưu thông tin lên đám mây khi bạn chọn lưu.</p>
             </form>
           </section>
 
@@ -157,13 +191,18 @@
             <button class="download-button" id="download-button" type="button" disabled>
               <span aria-hidden="true">↓</span> Tải poster PNG
             </button>
+            <div class="poster-actions">
+              <button class="storage-button" id="save-poster-button" type="button" disabled>Lưu poster riêng tư</button>
+              <button class="storage-button" id="restore-poster-button" type="button" disabled>Tải poster đã lưu</button>
+              <button class="storage-button" id="share-poster-button" type="button" disabled>Chia sẻ poster</button>
+            </div>
             <p class="preview-footnote">Ảnh nền BHXH bạn chọn được giữ nguyên; QR và tên chủ tài khoản đặt trong khung trống.</p>
           </section>
         </div>
 
         <footer class="page-footer">
           <span>VietQR Studio <span aria-hidden="true">·</span> Công cụ tạo mã QR chuyển khoản</span>
-          <span>Không lưu trữ hoặc gửi thông tin tài khoản của bạn</span>
+          <span>QR tạo trên trình duyệt; chỉ đồng bộ lên đám mây khi bạn đăng nhập và chủ động lưu</span>
         </footer>
       </section>
     </main>
