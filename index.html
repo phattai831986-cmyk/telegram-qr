@@ -5,51 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Xem poster hướng dẫn BHXH/VssID và quét mã QR tới đường dẫn chính thức."
+      content="Tạo mã QR chuyển khoản ngân hàng VietQR và tải poster chia sẻ."
     />
-    <meta name="theme-color" content="#eef5fb" />
-    <title>Hướng dẫn BHXH số</title>
+    <meta name="theme-color" content="#f3f7f4" />
+    <title>VietQR Studio — Tạo mã QR chuyển khoản</title>
   </head>
   <body>
-    <main class="customer-shell">
-      <header class="customer-header">
-        <a class="brand" href="./" aria-label="Trang hướng dẫn">
-          <span class="brand-mark" aria-hidden="true">i</span>
-          <span>Hướng dẫn <strong>BHXH số</strong></span>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="VietQR Studio trang chủ">
+          <span class="brand-mark" aria-hidden="true">V</span>
+          <span>VietQR <strong>Studio</strong></span>
         </a>
+        <span class="private-badge"><span aria-hidden="true"></span> Tạo mã an toàn trên thiết bị</span>
       </header>
 
-      <section class="customer-content" aria-labelledby="page-title">
-        <div class="customer-intro">
-          <p class="eyebrow">THÔNG TIN HƯỚNG DẪN</p>
-          <h1 id="page-title">Quét mã QR để xem hướng dẫn</h1>
-          <p>Đưa camera điện thoại vào mã QR trên poster để mở trang chủ chính thức của Bảo hiểm xã hội Việt Nam.</p>
-        </div>
-
-        <div class="poster-stage">
-          <div class="poster-canvas" id="poster-canvas">
-            <img
-              class="poster-template"
-              id="poster-template"
-              src="/telegram-qr/bhxh-guide-template.png"
-              alt="Poster hướng dẫn đăng ký tài khoản BHXH và VssID"
-            />
-            <img class="poster-qr" id="poster-qr" alt="Mã QR dẫn tới trang hướng dẫn chính thức" hidden />
+      <section class="workspace" aria-labelledby="page-title">
+        <div class="page-intro">
+          <div>
+            <p class="eyebrow">THANH TOÁN DỄ DÀNG</p>
+            <h1 id="page-title">Tạo QR chuyển khoản</h1>
+            <p class="intro-copy">Điền thông tin tài khoản, tạo mã VietQR và tải poster chia sẻ.</p>
+          </div>
+          <div class="step-indicator" aria-label="Quy trình 3 bước">
+            <span class="step active"><b>1</b> Nhập thông tin</span>
+            <span class="step-line" aria-hidden="true"></span>
+            <span class="step"><b>2</b> Tạo mã QR</span>
+            <span class="step-line" aria-hidden="true"></span>
+            <span class="step"><b>3</b> Tải poster</span>
           </div>
         </div>
 
-        <div class="customer-actions">
-          <p class="status-message" id="status-message" role="status">Đang tải poster hướng dẫn…</p>
-          <p class="destination-note" id="destination-note" hidden></p>
-          <button class="download-button" id="download-button" type="button" disabled>
-            <span aria-hidden="true">↓</span> Tải poster PNG
-          </button>
-          <p class="safety-note">
-            Đây là trang hướng dẫn độc lập. Hãy kiểm tra tên miền chính thức trước khi quét mã.
-          </p>
+        <div class="studio-layout">
+          <section class="form-card" aria-labelledby="form-title">
+            <div class="section-heading">
+              <div class="heading-icon" aria-hidden="true">↗</div>
+              <div>
+                <h2 id="form-title">Thông tin chuyển khoản</h2>
+                <p>Các thông tin này sẽ được mã hóa vào QR.</p>
+              </div>
+            </div>
+
+            <form id="transfer-form" novalidate>
+              <fieldset class="mode-fieldset">
+                <legend>Loại tài khoản</legend>
+                <div class="mode-option" aria-current="true">
+                  <span class="radio-indicator" aria-hidden="true"></span>
+                  <span class="mode-copy"><strong>Tài khoản ngân hàng</strong><small>Chuyển khoản qua VietQR</small></span>
+                  <span class="mode-icon" aria-hidden="true">▤</span>
+                </div>
+              </fieldset>
+
+              <div class="form-grid">
+                <div class="form-field full-width">
+                  <label for="bank">Ngân hàng <span class="required">*</span></label>
+                  <select id="bank" name="bank" required>
+                    <option value="">Chọn ngân hàng</option>
+                  </select>
+                </div>
+                <div class="form-field full-width">
+                  <label for="account-number">Số tài khoản <span class="required">*</span></label>
+                  <input
+                    id="account-number"
+                    name="accountNumber"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    placeholder="Nhập số tài khoản"
+                    maxlength="19"
+                    required
+                  />
+                </div>
+                <div class="form-field full-width">
+                  <label for="account-name">Tên chủ tài khoản <span class="required">*</span></label>
+                  <input
+                    id="account-name"
+                    name="accountName"
+                    type="text"
+                    autocomplete="name"
+                    placeholder="VD: NGUYEN VAN A"
+                    maxlength="25"
+                    required
+                  />
+                </div>
+                <div class="form-field">
+                  <label for="amount">Số tiền <span class="optional">(không bắt buộc)</span></label>
+                  <div class="input-with-suffix">
+                    <input
+                      id="amount"
+                      name="amount"
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      placeholder="0"
+                      maxlength="13"
+                    />
+                    <span>VND</span>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label for="description">Nội dung chuyển khoản <span class="optional">(không bắt buộc)</span></label>
+                  <input
+                    id="description"
+                    name="description"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="VD: Thanh toan don hang"
+                    maxlength="50"
+                  />
+                </div>
+              </div>
+
+              <p class="form-error" id="form-error" role="alert" hidden></p>
+              <button class="create-button" type="submit">
+                <span>Tạo mã QR chuyển khoản</span><span aria-hidden="true">→</span>
+              </button>
+              <p class="form-footnote"><span aria-hidden="true">▣</span> Mã QR được tạo ngay trên trình duyệt, không lưu thông tin.</p>
+            </form>
+          </section>
+
+          <section class="preview-panel" aria-labelledby="preview-title">
+            <div class="preview-heading">
+              <div>
+                <p class="eyebrow">BẢN XEM TRƯỚC</p>
+                <h2 id="preview-title">Poster chuyển khoản</h2>
+              </div>
+              <span class="preview-tag">PNG</span>
+            </div>
+
+            <div class="poster-wrap">
+              <div class="poster" id="poster" aria-live="polite">
+                <div class="poster-top">
+                  <div class="poster-brand"><span class="poster-brand-mark">V</span> VietQR</div>
+                  <span class="poster-label">CHUYỂN KHOẢN</span>
+                </div>
+                <div class="poster-title">Quét mã để<br /><strong>chuyển khoản</strong></div>
+                <div class="poster-bank" id="poster-bank">NGÂN HÀNG CỦA BẠN</div>
+                <div class="poster-qr">
+                  <div class="qr-placeholder" id="qr-placeholder">
+                    <span class="qr-placeholder-icon" aria-hidden="true">▦</span>
+                    <span>Mã QR sẽ hiển thị ở đây</span>
+                  </div>
+                  <img id="qr-image" alt="" hidden />
+                </div>
+                <div class="poster-recipient">
+                  <p class="recipient-label">CHỦ TÀI KHOẢN</p>
+                  <p class="recipient-name" id="poster-name">Tên chủ tài khoản</p>
+                  <p class="recipient-account" id="poster-account">Số tài khoản</p>
+                </div>
+                <div class="poster-payment" id="poster-payment" hidden>
+                  <div id="poster-amount-wrap" hidden><span>SỐ TIỀN</span><strong id="poster-amount"></strong></div>
+                  <div id="poster-description-wrap" hidden><span>NỘI DUNG</span><strong id="poster-description"></strong></div>
+                </div>
+                <div class="poster-bottom">
+                  <span class="scan-dot" aria-hidden="true"></span>
+                  Mở ứng dụng ngân hàng và quét mã
+                </div>
+                <div class="poster-decoration" aria-hidden="true"></div>
+              </div>
+            </div>
+            <button class="download-button" id="download-button" type="button" disabled>
+              <span aria-hidden="true">↓</span> Tải poster PNG
+            </button>
+            <p class="preview-footnote">Poster được xuất ở độ phân giải cao, sẵn sàng để chia sẻ.</p>
+          </section>
         </div>
+
+        <footer class="page-footer">
+          <span>VietQR Studio <span aria-hidden="true">·</span> Công cụ tạo mã QR chuyển khoản</span>
+          <span>Không lưu trữ hoặc gửi thông tin tài khoản của bạn</span>
+        </footer>
       </section>
     </main>
-    <script type="module" src="/src/customer.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

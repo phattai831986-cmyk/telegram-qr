@@ -1,8 +1,8 @@
-# Hướng dẫn BHXH số
+# VietQR Studio
 
-Trang khách hiển thị poster hướng dẫn BHXH/VssID với mã QR dẫn đến trang chủ chính thức
-`https://baohiemxahoi.gov.vn/`. Không cần trang quản trị, tài khoản, Supabase hoặc cấu hình
-bí mật. Người dùng có thể tải poster đã ghép mã QR dưới dạng PNG.
+Ứng dụng tạo mã QR chuyển khoản VietQR và poster PNG. Chọn ngân hàng, nhập số tài khoản
+và tên chủ tài khoản; số tiền và nội dung chuyển khoản là tùy chọn. Mã QR và poster được
+tạo ngay trên trình duyệt, thông tin không được gửi lên máy chủ.
 
 ## Chạy ứng dụng
 
@@ -11,9 +11,6 @@ npm install
 npm run dev
 ```
 
-Mã QR hiện dẫn đến trang chủ BHXH Việt Nam. Vị trí QR được đặt cố định trên ảnh poster
-`public/bhxh-guide-template.png`.
-
 ## Kiểm tra và triển khai
 
 ```sh
@@ -21,6 +18,6 @@ npm run build
 npm test
 ```
 
-Workflow `.github/workflows/deploy-pages.yml` chạy build/test trên pull request và triển khai
-GitHub Pages khi có commit lên `main` hoặc khi chạy thủ công. Website:
+Workflow `.github/workflows/deploy-pages.yml` chạy build và test trên pull request, sau đó
+triển khai GitHub Pages khi thay đổi được đưa vào `main`. Website:
 `https://phattai831986-cmyk.github.io/telegram-qr/`.
