@@ -5,7 +5,7 @@ và tên chủ tài khoản; số tiền và nội dung chuyển khoản là tù
 trình duyệt. Nếu muốn đồng bộ qua nhiều thiết bị, đăng nhập và chủ động lưu hồ sơ/poster
 vào Supabase riêng tư; dữ liệu không được lưu nếu bạn chưa nhấn nút lưu.
 
-Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background.png`.
+Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background-20261102.png`.
 Ảnh hiện tại là mẫu BHXH/VssID; ứng dụng đặt QR VietQR vào khung trống ở giữa poster.
 
 ## Chạy ứng dụng
