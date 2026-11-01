@@ -23,12 +23,7 @@ const authForm = document.querySelector("#auth-form");
 const signUpButton = document.querySelector("#sign-up-button");
 const signOutButton = document.querySelector("#sign-out-button");
 const syncStatus = document.querySelector("#sync-status");
-const elements = {
-  name: document.querySelector("#poster-name"),
-  account: document.querySelector("#poster-account"),
-};
 const posterQr = document.querySelector("#poster-qr");
-const posterRecipient = document.querySelector("#poster-recipient");
 const telegramApp = initializeTelegramMiniApp();
 const telegramMainButton = telegramApp?.MainButton;
 const QR_POSITION = { left: 0.34, top: 0.425, size: 0.32 };
@@ -105,12 +100,9 @@ function resetPoster() {
   qrImage.alt = "";
   qrImage.hidden = true;
   qrPlaceholder.hidden = false;
-  elements.name.textContent = "Tên chủ tài khoản";
-  elements.account.textContent = "Số tài khoản";
   posterQr.style.left = `${QR_POSITION.left * 100}%`;
   posterQr.style.top = `${QR_POSITION.top * 100}%`;
   posterQr.style.width = `${QR_POSITION.size * 100}%`;
-  posterRecipient.hidden = true;
   downloadButton.disabled = true;
   updateTelegramMainButton();
   updateSyncControls();
@@ -466,18 +458,15 @@ function readTransferDetails() {
 }
 
 function updatePoster(details, qrDataUrl) {
-  elements.name.textContent = details.accountName;
-  elements.account.textContent = details.accountNumber;
   posterQr.style.left = `${QR_POSITION.left * 100}%`;
   posterQr.style.top = `${QR_POSITION.top * 100}%`;
   posterQr.style.width = `${QR_POSITION.size * 100}%`;
-  posterRecipient.hidden = false;
   qrImage.src = qrDataUrl;
   qrImage.alt = `Mã VietQR chuyển khoản đến ${details.accountName}, ${details.bank.name}`;
   qrImage.hidden = false;
   qrPlaceholder.hidden = true;
   downloadButton.disabled = false;
-  currentPosterData = { details, qrDataUrl };
+  currentPosterData = { qrDataUrl };
   currentPosterBlob = null;
   updateTelegramMainButton();
   updateSyncControls();
@@ -510,16 +499,7 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-function drawPosterText(context, text, x, y, maxWidth, font) {
-  context.font = font;
-  let displayText = text;
-  while (displayText && context.measureText(displayText).width > maxWidth) {
-    displayText = `${displayText.slice(0, -2)}…`;
-  }
-  context.fillText(displayText, x, y);
-}
-
-async function createPosterPng({ details, qrDataUrl }) {
+async function createPosterPng({ qrDataUrl }) {
   const background = new Image();
   background.src = POSTER_BACKGROUND;
   await new Promise((resolve, reject) => {
@@ -551,15 +531,6 @@ async function createPosterPng({ details, qrDataUrl }) {
   const qrX = canvas.width * QR_POSITION.left;
   const qrY = canvas.height * QR_POSITION.top;
   context.drawImage(qr, qrX, qrY, qrSize, qrSize);
-
-  context.textAlign = "center";
-  context.fillStyle = "#173b2e";
-  context.font = `bold ${Math.round(canvas.width * 0.023)}px Arial, sans-serif`;
-  drawPosterText(context, details.accountName, canvas.width / 2, canvas.height * 0.682, canvas.width * 0.39, context.font);
-  context.fillStyle = "#53685d";
-  context.font = `${Math.round(canvas.width * 0.018)}px Arial, sans-serif`;
-  drawPosterText(context, details.accountNumber, canvas.width / 2, canvas.height * 0.699, canvas.width * 0.39, context.font);
-  context.textAlign = "left";
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
