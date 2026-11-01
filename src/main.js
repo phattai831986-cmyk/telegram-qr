@@ -553,9 +553,6 @@ async function createPosterPng({ details, qrDataUrl }) {
   context.drawImage(qr, qrX, qrY, qrSize, qrSize);
 
   context.textAlign = "center";
-  context.fillStyle = "#475e7d";
-  context.font = `bold ${Math.round(canvas.width * 0.014)}px Arial, sans-serif`;
-  context.fillText("CHỦ TÀI KHOẢN", canvas.width / 2, canvas.height * 0.666);
   context.fillStyle = "#173b2e";
   context.font = `bold ${Math.round(canvas.width * 0.023)}px Arial, sans-serif`;
   drawPosterText(context, details.accountName, canvas.width / 2, canvas.height * 0.682, canvas.width * 0.39, context.font);
