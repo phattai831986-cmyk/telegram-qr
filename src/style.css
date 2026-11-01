@@ -14,6 +14,7 @@
   --ink: #20362d;
   --muted: #77867e;
   --line: #e4ebe6;
+  --tg-background-color: #f3f7f4;
 }
 
 * {
@@ -22,11 +23,11 @@
 
 body {
   min-width: 320px;
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   margin: 0;
   background:
     radial-gradient(ellipse at 85% 8%, rgba(219, 239, 224, 0.58), transparent 34%),
-    #f3f7f4;
+    var(--tg-background-color, #f3f7f4);
 }
 
 button,
@@ -37,7 +38,7 @@ select {
 
 .app-shell {
   width: min(1180px, calc(100% - 64px));
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   margin: 0 auto;
 }
 
@@ -91,6 +92,117 @@ select {
   border-radius: 50%;
   background: #38ad72;
   box-shadow: 0 0 0 3px rgba(56, 173, 114, 0.12);
+}
+
+.sync-panel {
+  margin: 0 0 22px;
+  border: 1px solid rgba(224, 233, 226, 0.9);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(36, 68, 48, 0.035);
+}
+
+.sync-panel summary {
+  padding: 14px 17px;
+  color: #355643;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sync-content {
+  padding: 0 17px 15px;
+}
+
+.sync-copy,
+.sync-status {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.sync-status[data-state="error"] {
+  color: #bd3b45;
+}
+
+.auth-form {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
+  gap: 8px;
+}
+
+.auth-form input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dce5de;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.auth-form input:focus {
+  border-color: #79b88c;
+  outline: 2px solid rgba(25, 135, 84, 0.12);
+}
+
+.auth-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.auth-button,
+.storage-button {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid #cfe0d3;
+  border-radius: 6px;
+  color: #176b41;
+  background: #f7fbf8;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.auth-button:hover:not(:disabled),
+.storage-button:hover:not(:disabled) {
+  border-color: #8dbb9a;
+  background: #edf6ef;
+}
+
+.storage-button:disabled,
+.auth-button:disabled {
+  color: #98a59c;
+  background: #f2f5f3;
+  cursor: not-allowed;
+}
+
+.secondary-auth-button {
+  color: #53685d;
+  background: #fff;
+}
+
+.storage-actions,
+.poster-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.storage-actions .storage-button,
+.poster-actions .storage-button {
+  flex: 1 1 145px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .workspace {
@@ -322,6 +434,7 @@ h1 {
 
 .form-field input,
 .form-field select,
+.mode-fieldset select,
 .input-with-suffix {
   width: 100%;
   min-width: 0;
@@ -335,7 +448,8 @@ h1 {
 }
 
 .form-field input,
-.form-field select {
+.form-field select,
+.mode-fieldset select {
   padding: 0 11px;
   outline: none;
 }
@@ -346,16 +460,25 @@ h1 {
 
 .form-field input:focus,
 .form-field select:focus,
+.mode-fieldset select:focus,
 .input-with-suffix:focus-within {
   border-color: #79b88c;
   box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.1);
 }
 
-.form-field select {
+.form-field select,
+.mode-fieldset select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 1.5 5 5 5-5' stroke='%2377867e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
+}
+
+.form-field input:disabled,
+.form-field select:disabled {
+  color: #64746a;
+  background-color: #f2f5f3;
+  cursor: not-allowed;
 }
 
 .input-with-suffix {
@@ -586,6 +709,10 @@ h1 {
   margin-top: 14px;
 }
 
+.poster-actions {
+  margin-top: 8px;
+}
+
 .download-button:disabled {
   color: #86958b;
   background: #e3eae5;
@@ -610,7 +737,7 @@ h1 {
   justify-content: space-between;
   gap: 15px;
   margin-top: 22px;
-  padding: 15px 0 18px;
+  padding: 15px 0 max(18px, env(safe-area-inset-bottom));
   border-top: 1px solid #e3eae4;
   color: #89958e;
   font-size: 9px;
@@ -647,6 +774,19 @@ h1 {
 
   .topbar {
     height: 64px;
+  }
+
+  .private-badge {
+    max-width: 160px;
+    text-align: right;
+  }
+
+  .auth-form {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-actions {
+    flex-wrap: wrap;
   }
 
   .private-badge {

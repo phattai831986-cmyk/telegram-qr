@@ -2,13 +2,14 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta
       name="description"
       content="Tạo mã QR chuyển khoản ngân hàng VietQR và tải poster chia sẻ."
     />
     <meta name="theme-color" content="#f3f7f4" />
     <title>VietQR Studio — Tạo mã QR chuyển khoản</title>
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -17,7 +18,7 @@
           <span class="brand-mark" aria-hidden="true">V</span>
           <span>VietQR <strong>Studio</strong></span>
         </a>
-        <span class="private-badge"><span aria-hidden="true"></span> Tạo mã an toàn trên thiết bị</span>
+        <span class="private-badge"><span aria-hidden="true"></span> QR tạo an toàn trên thiết bị</span>
       </header>
 
       <section class="workspace" aria-labelledby="page-title">
@@ -36,6 +37,36 @@
           </div>
         </div>
 
+        <details class="sync-panel" id="sync-panel">
+          <summary>Lưu tài khoản và poster để dùng trên thiết bị khác</summary>
+          <div class="sync-content">
+            <p class="sync-copy">
+              Đăng nhập để đồng bộ thông tin chuyển khoản và poster riêng tư qua Supabase. Chỉ tài khoản của bạn
+              mới truy cập được dữ liệu đã lưu.
+            </p>
+            <form id="auth-form" class="auth-form">
+              <label class="sr-only" for="auth-email">Email</label>
+              <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="Email" required />
+              <label class="sr-only" for="auth-password">Mật khẩu</label>
+              <input
+                id="auth-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Mật khẩu (ít nhất 8 ký tự)"
+                minlength="8"
+                required
+              />
+              <div class="auth-actions">
+                <button class="auth-button" id="sign-in-button" type="submit">Đăng nhập</button>
+                <button class="auth-button secondary-auth-button" id="sign-up-button" type="button">Tạo tài khoản</button>
+                <button class="auth-button secondary-auth-button" id="sign-out-button" type="button" hidden>Đăng xuất</button>
+              </div>
+            </form>
+            <p class="sync-status" id="sync-status" role="status">Đang kiểm tra cấu hình đồng bộ…</p>
+          </div>
+        </details>
+
         <div class="studio-layout">
           <section class="form-card" aria-labelledby="form-title">
             <div class="section-heading">
@@ -48,15 +79,20 @@
 
             <form id="transfer-form" novalidate>
               <fieldset class="mode-fieldset">
-                <legend>Loại tài khoản</legend>
-                <div class="mode-option" aria-current="true">
-                  <span class="radio-indicator" aria-hidden="true"></span>
-                  <span class="mode-copy"><strong>Tài khoản ngân hàng</strong><small>Chuyển khoản qua VietQR</small></span>
-                  <span class="mode-icon" aria-hidden="true">▤</span>
-                </div>
+                <legend>Chế độ</legend>
+                <select id="account-mode" name="accountMode">
+                  <option value="fixed">Tài khoản cố định</option>
+                  <option value="optional">Tài khoản tùy chọn</option>
+                </select>
               </fieldset>
 
               <div class="form-grid">
+                <div class="form-field full-width">
+                  <label for="saved-account">Tài khoản đã lưu</label>
+                  <select id="saved-account" name="savedAccount" disabled>
+                    <option value="new">Nhập tài khoản mới…</option>
+                  </select>
+                </div>
                 <div class="form-field full-width">
                   <label for="bank">Ngân hàng <span class="required">*</span></label>
                   <select id="bank" name="bank" required>
@@ -120,7 +156,11 @@
               <button class="create-button" type="submit">
                 <span>Tạo mã QR chuyển khoản</span><span aria-hidden="true">→</span>
               </button>
-              <p class="form-footnote"><span aria-hidden="true">▣</span> Mã QR được tạo ngay trên trình duyệt, không lưu thông tin.</p>
+              <div class="storage-actions">
+                <button class="storage-button" id="save-account-button" type="button" disabled>Lưu thông tin tài khoản</button>
+                <button class="storage-button" id="set-default-account-button" type="button" disabled>Đặt làm tài khoản cố định</button>
+              </div>
+              <p class="form-footnote"><span aria-hidden="true">▣</span> Lưu các tài khoản riêng tư sau khi đăng nhập. Chế độ cố định dùng tài khoản mặc định; chế độ tùy chọn cho phép chọn tài khoản đã lưu.</p>
             </form>
           </section>
 
@@ -157,13 +197,19 @@
             <button class="download-button" id="download-button" type="button" disabled>
               <span aria-hidden="true">↓</span> Tải poster PNG
             </button>
-            <p class="preview-footnote">Ảnh nền BHXH bạn chọn được giữ nguyên; QR và tên chủ tài khoản đặt trong khung trống.</p>
+            <div class="poster-actions">
+              <button class="storage-button" id="save-poster-button" type="button" disabled>Lưu poster riêng tư</button>
+              <button class="storage-button" id="restore-poster-button" type="button" disabled>Tải poster đã lưu</button>
+              <button class="storage-button" id="share-poster-button" type="button" disabled>Chia sẻ ảnh poster</button>
+              <button class="storage-button" id="share-telegram-button" type="button">Chia sẻ liên kết qua Telegram</button>
+            </div>
+            <p class="preview-footnote">Chia sẻ liên kết sẽ mở Telegram để chọn chat/nhóm. Để gửi ảnh, chọn Telegram trong bảng chia sẻ hoặc tải PNG rồi đính kèm.</p>
           </section>
         </div>
 
         <footer class="page-footer">
           <span>VietQR Studio <span aria-hidden="true">·</span> Công cụ tạo mã QR chuyển khoản</span>
-          <span>Không lưu trữ hoặc gửi thông tin tài khoản của bạn</span>
+          <span>QR tạo trên trình duyệt; chỉ đồng bộ lên đám mây khi bạn đăng nhập và chủ động lưu</span>
         </footer>
       </section>
     </main>
