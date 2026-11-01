@@ -6,12 +6,7 @@ trình duyệt. Nếu muốn đồng bộ qua nhiều thiết bị, đăng nhậ
 vào Supabase riêng tư; dữ liệu không được lưu nếu bạn chưa nhấn nút lưu.
 
 Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background.png`.
-Ảnh hiện tại có nội dung BHXH/VssID; ảnh được giữ nguyên và QR VietQR cùng thông tin người
-nhận được đặt trong khung trống.
-
-Poster dùng ảnh nền do người dùng cung cấp tại `public/transfer-poster-background.png`.
-Ảnh hiện tại có nội dung BHXH/VssID; ảnh được giữ nguyên và QR VietQR cùng thông tin người
-nhận được đặt trong khung trống.
+Ảnh hiện tại là mẫu BHXH/VssID; ứng dụng đặt QR VietQR vào khung trống ở giữa poster.
 
 ## Chạy ứng dụng
 
