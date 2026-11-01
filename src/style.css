@@ -669,21 +669,13 @@ h1 {
 .poster-recipient {
   position: absolute;
   z-index: 1;
-  top: 65.8%;
+  top: 66.8%;
   left: 28%;
   width: 44%;
   overflow: hidden;
   color: #102e55;
   text-align: center;
   white-space: nowrap;
-}
-
-.recipient-label {
-  margin: 0 0 1px;
-  color: #475e7d;
-  font-size: 1.4cqw;
-  font-weight: 750;
-  letter-spacing: 0.2px;
 }
 
 .recipient-name {
