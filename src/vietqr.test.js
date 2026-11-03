@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { BANKS } from "./banks.js";
 import { crc16, createVietQrPayload, formatVnd } from "./vietqr.js";
 
 const transfer = {
@@ -22,6 +23,12 @@ function readTopLevelFields(payload) {
   }
   return fields;
 }
+
+test("includes NCB with its VietQR bank identifier", () => {
+  assert.ok(BANKS.some(({ name, bin, shortName }) =>
+    name === "NCB" && bin === "970419" && shortName === "NCB"
+  ));
+});
 
 test("uses the standard CRC-16/CCITT-FALSE checksum", () => {
   assert.equal(crc16("123456789"), "29B1");

@@ -19,6 +19,7 @@ export const BANKS = [
   { name: "LPBank", bin: "970449", shortName: "LPB" },
   { name: "VietBank", bin: "970433", shortName: "VBB" },
   { name: "Nam A Bank", bin: "970428", shortName: "NAB" },
+  { name: "NCB", bin: "970419", shortName: "NCB" },
   { name: "KienlongBank", bin: "970452", shortName: "KLB" },
   { name: "PVcomBank", bin: "970412", shortName: "PVCB" },
   { name: "BVBank", bin: "970438", shortName: "BVB" },
