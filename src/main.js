@@ -23,6 +23,15 @@ const authForm = document.querySelector("#auth-form");
 const signUpButton = document.querySelector("#sign-up-button");
 const signOutButton = document.querySelector("#sign-out-button");
 const syncStatus = document.querySelector("#sync-status");
+const accessGate = document.querySelector("#access-gate");
+const accessMessage = document.querySelector("#access-message");
+const accessGateStatus = document.querySelector("#access-gate-status");
+const requestAccessButton = document.querySelector("#request-access-button");
+const studioLayout = document.querySelector("#studio-layout");
+const accessAdminPanel = document.querySelector("#access-admin-panel");
+const accessAdminStatus = document.querySelector("#access-admin-status");
+const accessRequestList = document.querySelector("#access-request-list");
+const refreshAccessRequestsButton = document.querySelector("#refresh-access-requests");
 const posterQr = document.querySelector("#poster-qr");
 const telegramApp = initializeTelegramMiniApp();
 const telegramMainButton = telegramApp?.MainButton;
@@ -31,6 +40,8 @@ const POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background
 let currentPosterData = null;
 let currentPosterBlob = null;
 let currentUser = null;
+let isAccessApproved = false;
+let isAccessAdmin = false;
 let isGenerating = false;
 let savedProfiles = [];
 let selectedProfileId = null;
@@ -38,6 +49,10 @@ const POSTER_BUCKET = "transfer-posters";
 
 function updateTelegramMainButton() {
   if (!telegramMainButton) return;
+  if (!isAccessApproved) {
+    telegramMainButton.hide();
+    return;
+  }
   telegramMainButton.setText(currentPosterData ? "Tải poster PNG" : "Tạo mã QR chuyển khoản");
   if (isGenerating) telegramMainButton.disable();
   else telegramMainButton.enable();
@@ -46,7 +61,7 @@ function updateTelegramMainButton() {
 
 if (telegramMainButton?.onClick) {
   telegramMainButton.onClick(() => {
-    if (isGenerating) return;
+    if (isGenerating || !isAccessApproved) return;
     if (currentPosterData) downloadButton.click();
     else form.requestSubmit();
   });
@@ -58,8 +73,17 @@ function setSyncStatus(message, isError = false) {
   syncStatus.dataset.state = isError ? "error" : "ready";
 }
 
+function showAccessGate(message, { canRequest = false, buttonText = "Gửi yêu cầu sử dụng" } = {}) {
+  accessGate.hidden = false;
+  studioLayout.hidden = true;
+  accessMessage.textContent = message;
+  requestAccessButton.hidden = !canRequest;
+  requestAccessButton.textContent = buttonText;
+}
+
 function updateSyncControls() {
   const signedIn = Boolean(currentUser);
+  const hasAccess = Boolean(currentUser && isAccessApproved);
   const hasTransfer = Boolean(currentPosterData);
   const selectedProfile = savedProfiles.find((profile) => profile.id === selectedProfileId);
   const defaultProfile = savedProfiles.find((profile) => profile.is_default);
@@ -71,18 +95,162 @@ function updateSyncControls() {
   signUpButton.hidden = signedIn;
   signUpButton.disabled = !supabaseConfigured;
   signOutButton.hidden = !signedIn;
-  saveAccountButton.disabled = !signedIn;
+  saveAccountButton.disabled = !hasAccess;
   savedAccountSelect.disabled =
-    !signedIn || savedProfiles.length === 0 || accountModeSelect.value === "fixed";
-  setDefaultAccountButton.disabled = !signedIn || !selectedProfile || selectedProfile.is_default;
+    !hasAccess || savedProfiles.length === 0 || accountModeSelect.value === "fixed";
+  setDefaultAccountButton.disabled = !hasAccess || !selectedProfile || selectedProfile.is_default;
   for (const control of [bankSelect, form.elements.accountNumber, form.elements.accountName]) {
     control.disabled = Boolean(activeProfile);
   }
-  savePosterButton.disabled = !signedIn || !hasTransfer;
-  restorePosterButton.disabled = !signedIn;
-  sharePosterButton.disabled = !hasTransfer;
+  savePosterButton.disabled = !hasAccess || !hasTransfer;
+  restorePosterButton.disabled = !hasAccess;
+  sharePosterButton.disabled = !hasAccess || !hasTransfer;
   if (!supabaseConfigured) {
-    setSyncStatus("Đồng bộ cần cấu hình Supabase. Tạo QR và tải poster vẫn dùng được bình thường.", true);
+    setSyncStatus("Cần cấu hình Supabase để đăng nhập và kiểm tra quyền sử dụng.", true);
+  }
+}
+
+async function loadAccessRequests() {
+  if (!supabase || !isAccessAdmin) return;
+  accessAdminStatus.textContent = "Đang tải yêu cầu…";
+  const { data, error } = await supabase.rpc("list_app_access_requests");
+  if (error) throw error;
+
+  accessRequestList.replaceChildren();
+  for (const request of data ?? []) {
+    const item = document.createElement("li");
+    item.className = "access-request-item";
+
+    const details = document.createElement("div");
+    details.className = "access-request-details";
+    const email = document.createElement("strong");
+    email.textContent = request.email || "Email không khả dụng";
+    const status = document.createElement("span");
+    status.textContent =
+      request.status === "approved"
+        ? "Đã duyệt"
+        : request.status === "denied"
+          ? "Đã từ chối"
+          : "Đang chờ duyệt";
+    details.append(email, status);
+
+    const actions = document.createElement("div");
+    actions.className = "access-request-actions";
+    if (request.status === "approved") {
+      actions.append(createAccessActionButton("Thu hồi quyền", request.user_id, false));
+    } else {
+      actions.append(createAccessActionButton("Duyệt", request.user_id, true));
+      if (request.status === "pending") {
+        actions.append(createAccessActionButton("Từ chối", request.user_id, false));
+      }
+    }
+
+    item.append(details, actions);
+    accessRequestList.append(item);
+  }
+
+  accessAdminStatus.textContent = data?.length
+    ? `Có ${data.length} yêu cầu hoặc tài khoản trong danh sách.`
+    : "Chưa có yêu cầu sử dụng nào.";
+}
+
+function createAccessActionButton(label, userId, approved) {
+  const button = document.createElement("button");
+  button.className = "storage-button";
+  button.type = "button";
+  button.textContent = label;
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    try {
+      const { error } = await supabase.rpc("review_app_access_request", {
+        target_user_id: userId,
+        approved,
+      });
+      if (error) throw error;
+      accessAdminStatus.textContent = approved ? "Đã cấp quyền sử dụng." : "Đã cập nhật quyền truy cập.";
+      await loadAccessRequests();
+    } catch (error) {
+      accessAdminStatus.textContent =
+        error instanceof Error ? error.message : "Không thể cập nhật quyền truy cập.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+  return button;
+}
+
+async function refreshAppAccess() {
+  if (!supabase || !currentUser) {
+    isAccessApproved = false;
+    isAccessAdmin = false;
+    accessAdminPanel.hidden = true;
+    showAccessGate(
+      supabaseConfigured
+        ? "Đăng nhập hoặc tạo tài khoản email, sau đó gửi yêu cầu để chủ ứng dụng phê duyệt."
+        : "Ứng dụng cần được cấu hình Supabase để xác thực và duyệt tài khoản trước khi sử dụng.",
+    );
+    updateSyncControls();
+    return;
+  }
+
+  const userId = currentUser.id;
+  isAccessApproved = false;
+  isAccessAdmin = false;
+  accessAdminPanel.hidden = true;
+  accessGateStatus.textContent = "Đang kiểm tra quyền truy cập…";
+  showAccessGate("Đang kiểm tra quyền truy cập…");
+  updateTelegramMainButton();
+
+  try {
+    const { data, error } = await supabase.rpc("get_app_access_state");
+    if (error) throw error;
+    if (currentUser?.id !== userId) return;
+
+    isAccessAdmin = data?.is_admin === true;
+    isAccessApproved = isAccessAdmin || data?.status === "approved";
+    if (!isAccessApproved) {
+      if (data?.status === "pending") {
+        showAccessGate("Yêu cầu của bạn đang chờ chủ ứng dụng phê duyệt.");
+      } else if (data?.status === "denied") {
+        showAccessGate("Tài khoản chưa được cấp quyền. Bạn có thể gửi lại yêu cầu để được xem xét.", {
+          canRequest: true,
+          buttonText: "Gửi lại yêu cầu",
+        });
+      } else {
+        showAccessGate("Tài khoản chưa có quyền sử dụng. Gửi yêu cầu để chủ ứng dụng phê duyệt.", {
+          canRequest: true,
+        });
+      }
+      accessGateStatus.textContent = `Đang đăng nhập: ${currentUser.email ?? ""}`;
+      setSyncStatus("Bạn cần được chủ ứng dụng phê duyệt trước khi sử dụng công cụ.");
+      updateSyncControls();
+      return;
+    }
+
+    accessGate.hidden = true;
+    studioLayout.hidden = false;
+    accessAdminPanel.hidden = !isAccessAdmin;
+    accessGateStatus.textContent = "";
+    updateTelegramMainButton();
+    updateSyncControls();
+    if (isAccessAdmin) {
+      loadAccessRequests().catch((error) => {
+        accessAdminStatus.textContent =
+          error instanceof Error ? error.message : "Không thể tải danh sách yêu cầu.";
+      });
+    }
+    loadSavedProfiles().catch((error) =>
+      setSyncStatus(error instanceof Error ? error.message : "Không thể tải dữ liệu.", true),
+    );
+  } catch (error) {
+    if (currentUser?.id !== userId) return;
+    isAccessApproved = false;
+    isAccessAdmin = false;
+    accessAdminPanel.hidden = true;
+    showAccessGate("Không thể kiểm tra quyền truy cập. Vui lòng tải lại trang hoặc liên hệ chủ ứng dụng.");
+    accessGateStatus.textContent = error instanceof Error ? error.message : "Lỗi kiểm tra quyền truy cập.";
+    setSyncStatus("Không thể xác minh quyền truy cập. Công cụ đã được khóa để bảo vệ cổng phê duyệt.", true);
+    updateSyncControls();
   }
 }
 
@@ -160,6 +328,7 @@ function renderSavedProfiles() {
 
 async function loadSavedProfiles() {
   if (!currentUser || !supabase) return;
+  const userId = currentUser.id;
   const { data, error } = await supabase
     .from("transfer_profiles")
     .select("id,bank_bin,account_number,account_name,amount,description,is_default")
@@ -167,6 +336,7 @@ async function loadSavedProfiles() {
     .order("is_default", { ascending: false })
     .order("account_name", { ascending: true });
   if (error) throw error;
+  if (currentUser?.id !== userId || !isAccessApproved) return;
   savedProfiles = data ?? [];
   renderSavedProfiles();
 
@@ -202,7 +372,7 @@ savedAccountSelect.addEventListener("change", () => {
 });
 
 async function loadSavedPoster({ download = false } = {}) {
-  if (!currentUser || !supabase) return null;
+  if (!currentUser || !isAccessApproved || !supabase) return null;
   const { data, error } = await supabase.storage
     .from(POSTER_BUCKET)
     .download(`${currentUser.id}/poster.png`);
@@ -218,6 +388,7 @@ async function loadSavedPoster({ download = false } = {}) {
 }
 
 async function getCurrentPosterBlob() {
+  if (!isAccessApproved) throw new Error("Tài khoản chưa được phê duyệt sử dụng ứng dụng.");
   if (!currentPosterData) throw new Error("Hãy tạo mã QR trước.");
   if (!currentPosterBlob) currentPosterBlob = await createPosterPng(currentPosterData);
   return currentPosterBlob;
@@ -283,8 +454,35 @@ signOutButton.addEventListener("click", async () => {
   else setSyncStatus("Đã đăng xuất. Dữ liệu lưu trên đám mây vẫn được bảo vệ trong tài khoản.");
 });
 
+requestAccessButton.addEventListener("click", async () => {
+  if (!supabase || !currentUser) return;
+  requestAccessButton.disabled = true;
+  try {
+    const { error } = await supabase.rpc("request_app_access");
+    if (error) throw error;
+    await refreshAppAccess();
+  } catch (error) {
+    accessGateStatus.textContent =
+      error instanceof Error ? error.message : "Không thể gửi yêu cầu. Vui lòng thử lại.";
+  } finally {
+    requestAccessButton.disabled = false;
+  }
+});
+
+refreshAccessRequestsButton.addEventListener("click", async () => {
+  refreshAccessRequestsButton.disabled = true;
+  try {
+    await loadAccessRequests();
+  } catch (error) {
+    accessAdminStatus.textContent =
+      error instanceof Error ? error.message : "Không thể tải danh sách yêu cầu.";
+  } finally {
+    refreshAccessRequestsButton.disabled = false;
+  }
+});
+
 saveAccountButton.addEventListener("click", async () => {
-  if (!currentUser || !supabase) return;
+  if (!currentUser || !isAccessApproved || !supabase) return;
   saveAccountButton.disabled = true;
   try {
     const details = readTransferDetails();
@@ -321,7 +519,7 @@ saveAccountButton.addEventListener("click", async () => {
 });
 
 async function setDefaultAccount(profileId) {
-  if (!supabase) return;
+  if (!isAccessApproved || !supabase) return;
   const { error } = await supabase.rpc("set_default_transfer_profile", { profile_id: profileId });
   if (error) throw error;
   accountModeSelect.value = "fixed";
@@ -342,7 +540,7 @@ setDefaultAccountButton.addEventListener("click", async () => {
 });
 
 savePosterButton.addEventListener("click", async () => {
-  if (!currentUser || !supabase) return;
+  if (!currentUser || !isAccessApproved || !supabase) return;
   savePosterButton.disabled = true;
   try {
     const blob = await getCurrentPosterBlob();
@@ -414,21 +612,30 @@ if (supabase) {
   supabase.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user ?? null;
     if (!currentUser) {
+      isAccessApproved = false;
+      isAccessAdmin = false;
+      accessAdminPanel.hidden = true;
+      accessAdminStatus.textContent = "";
+      accessRequestList.replaceChildren();
+      accessGateStatus.textContent = "";
+      showAccessGate("Đăng nhập hoặc tạo tài khoản email, sau đó gửi yêu cầu để chủ ứng dụng phê duyệt.");
       savedProfiles = [];
       selectedProfileId = null;
+      updateTelegramMainButton();
       renderSavedProfiles();
       setSyncStatus("Đăng nhập để lưu riêng tư và đồng bộ trên các thiết bị.");
+      updateSyncControls();
       return;
     }
-    updateSyncControls();
-    setSyncStatus(`Đã đăng nhập: ${currentUser.email}. Đang tải danh sách tài khoản…`);
+    const userId = currentUser.id;
+    showAccessGate("Đang kiểm tra quyền truy cập…");
+    setSyncStatus(`Đã đăng nhập: ${currentUser.email}. Đang kiểm tra quyền sử dụng…`);
     window.setTimeout(() => {
-      loadSavedProfiles().catch((error) =>
-        setSyncStatus(error instanceof Error ? error.message : "Không thể tải dữ liệu.", true),
-      );
+      if (currentUser?.id === userId) refreshAppAccess();
     }, 0);
   });
 } else {
+  showAccessGate("Ứng dụng cần được cấu hình Supabase để xác thực và duyệt tài khoản trước khi sử dụng.");
   updateSyncControls();
 }
 
@@ -474,6 +681,7 @@ function updatePoster(details, qrDataUrl) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!isAccessApproved) return;
   errorMessage.hidden = true;
   isGenerating = true;
   updateTelegramMainButton();

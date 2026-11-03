@@ -37,12 +37,11 @@
           </div>
         </div>
 
-        <details class="sync-panel" id="sync-panel">
-          <summary>Lưu tài khoản và poster để dùng trên thiết bị khác</summary>
+        <details class="sync-panel" id="sync-panel" open>
+          <summary>Đăng nhập và yêu cầu quyền sử dụng</summary>
           <div class="sync-content">
             <p class="sync-copy">
-              Đăng nhập để đồng bộ thông tin chuyển khoản và poster riêng tư qua Supabase. Chỉ tài khoản của bạn
-              mới truy cập được dữ liệu đã lưu.
+              Đăng nhập bằng email. Chủ ứng dụng cần phê duyệt tài khoản trước khi bạn sử dụng công cụ tạo QR.
             </p>
             <form id="auth-form" class="auth-form">
               <label class="sr-only" for="auth-email">Email</label>
@@ -64,10 +63,27 @@
               </div>
             </form>
             <p class="sync-status" id="sync-status" role="status">Đang kiểm tra cấu hình đồng bộ…</p>
+            <section class="access-admin-panel" id="access-admin-panel" aria-labelledby="access-admin-title" hidden>
+              <div class="access-admin-heading">
+                <h3 id="access-admin-title">Quản lý quyền truy cập</h3>
+                <button class="storage-button" id="refresh-access-requests" type="button">Làm mới</button>
+              </div>
+              <p class="access-admin-status" id="access-admin-status" role="status"></p>
+              <ul class="access-request-list" id="access-request-list"></ul>
+            </section>
           </div>
         </details>
 
-        <div class="studio-layout">
+        <section class="access-gate" id="access-gate" aria-labelledby="access-title">
+          <div class="access-gate-icon" aria-hidden="true">✓</div>
+          <p class="eyebrow">TRUY CẬP CÓ PHÊ DUYỆT</p>
+          <h2 id="access-title">Đăng nhập để tiếp tục</h2>
+          <p id="access-message">Đăng nhập hoặc tạo tài khoản email, sau đó gửi yêu cầu để chủ ứng dụng phê duyệt.</p>
+          <button class="create-button" id="request-access-button" type="button" hidden>Gửi yêu cầu sử dụng</button>
+          <p class="access-gate-status" id="access-gate-status" role="status"></p>
+        </section>
+
+        <div class="studio-layout" id="studio-layout" hidden>
           <section class="form-card" aria-labelledby="form-title">
             <div class="section-heading">
               <div class="heading-icon" aria-hidden="true">↗</div>
