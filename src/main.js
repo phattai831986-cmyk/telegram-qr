@@ -3,6 +3,14 @@ import { BANKS } from "./banks.js";
 import { createVietQrPayload } from "./vietqr.js";
 import { supabase, supabaseConfigured } from "./supabase.js";
 import { createTelegramShareUrl, initializeTelegramMiniApp } from "./telegram.js";
+import {
+  DEFAULT_QR_SLOT,
+  POSTER_SLOT_PATH,
+  POSTER_TEMPLATE_PATH,
+  normalizeQrSlot,
+  slotToStyle,
+  validateTemplateFile,
+} from "./poster.js";
 import "./style.css";
 
 const form = document.querySelector("#transfer-form");
@@ -35,8 +43,19 @@ const refreshAccessRequestsButton = document.querySelector("#refresh-access-requ
 const posterQr = document.querySelector("#poster-qr");
 const telegramApp = initializeTelegramMiniApp();
 const telegramMainButton = telegramApp?.MainButton;
-const QR_POSITION = { left: 0.34, top: 0.454, size: 0.32 };
-const POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background-20261102.png`;
+let QR_POSITION = { ...DEFAULT_QR_SLOT };
+const DEFAULT_POSTER_BACKGROUND = `${import.meta.env.BASE_URL}transfer-poster-background-20261102.png`;
+let posterBackground = DEFAULT_POSTER_BACKGROUND;
+let posterTemplateObjectUrl = null;
+const posterBackgroundImage = document.querySelector("#poster-background");
+const posterTemplateForm = document.querySelector("#poster-template-form");
+const posterTemplateFile = document.querySelector("#poster-template-file");
+const posterTemplateStatus = document.querySelector("#poster-template-status");
+const slotInputs = {
+  left: document.querySelector("#slot-left"),
+  top: document.querySelector("#slot-top"),
+  size: document.querySelector("#slot-size"),
+};
 let currentPosterData = null;
 let currentPosterBlob = null;
 let currentUser = null;
@@ -239,6 +258,7 @@ async function refreshAppAccess() {
           error instanceof Error ? error.message : "Không thể tải danh sách yêu cầu.";
       });
     }
+    loadPosterTemplate();
     loadSavedProfiles().catch((error) =>
       setSyncStatus(error instanceof Error ? error.message : "Không thể tải dữ liệu.", true),
     );
@@ -261,6 +281,78 @@ for (const bank of BANKS) {
   bankSelect.append(option);
 }
 
+function applyQrSlot() {
+  Object.assign(posterQr.style, slotToStyle(QR_POSITION));
+}
+
+function updateQrSlot(slot) {
+  QR_POSITION = normalizeQrSlot(slot);
+  applyQrSlot();
+  slotInputs.left.value = +(QR_POSITION.left * 100).toFixed(2);
+  slotInputs.top.value = +(QR_POSITION.top * 100).toFixed(2);
+  slotInputs.size.value = +(QR_POSITION.size * 100).toFixed(2);
+  currentPosterBlob = null;
+}
+
+function setPosterTemplate(url, slot) {
+  if (posterTemplateObjectUrl) URL.revokeObjectURL(posterTemplateObjectUrl);
+  posterTemplateObjectUrl = url.startsWith("blob:") ? url : null;
+  posterBackground = url;
+  posterBackgroundImage.src = url;
+  updateQrSlot(slot);
+}
+
+updateQrSlot(QR_POSITION);
+
+async function loadPosterTemplate() {
+  if (!supabase || !currentUser) return;
+  try {
+    const image = await supabase.storage.from(POSTER_BUCKET).download(POSTER_TEMPLATE_PATH);
+    if (image.error || !image.data) return;
+    const slotFile = await supabase.storage.from(POSTER_BUCKET).download(POSTER_SLOT_PATH);
+    let slot = null;
+    if (!slotFile.error && slotFile.data) slot = JSON.parse(await slotFile.data.text());
+    setPosterTemplate(URL.createObjectURL(image.data), slot);
+  } catch {
+    // Keep the bundled default poster when no shared template is available.
+  }
+}
+
+posterTemplateForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!supabase || !isAccessAdmin) return;
+  const file = posterTemplateFile.files[0];
+  const slot = normalizeQrSlot({
+    left: Number(slotInputs.left.value) / 100,
+    top: Number(slotInputs.top.value) / 100,
+    size: Number(slotInputs.size.value) / 100,
+  }, QR_POSITION);
+  const fileError = file ? validateTemplateFile(file) : null;
+  if (fileError) {
+    posterTemplateStatus.textContent = fileError;
+    return;
+  }
+  posterTemplateStatus.textContent = "Đang lưu poster mẫu…";
+  try {
+    const storage = supabase.storage.from(POSTER_BUCKET);
+    if (file) {
+      const { error } = await storage.upload(POSTER_TEMPLATE_PATH, file, { contentType: "image/png", upsert: true });
+      if (error) throw error;
+    }
+    const slotBlob = new Blob([JSON.stringify(slot)], { type: "application/json" });
+    const { error: slotError } = await storage.upload(POSTER_SLOT_PATH, slotBlob, {
+      contentType: "application/json",
+      upsert: true,
+    });
+    if (slotError) throw slotError;
+    if (file) setPosterTemplate(URL.createObjectURL(file), slot);
+    else updateQrSlot(slot);
+    posterTemplateFile.value = "";
+    posterTemplateStatus.textContent = "Đã cập nhật poster mẫu và vị trí QR.";
+  } catch (error) {
+    posterTemplateStatus.textContent = error instanceof Error ? error.message : "Không thể lưu poster mẫu.";
+  }
+});
 function resetPoster() {
   currentPosterData = null;
   currentPosterBlob = null;
@@ -268,9 +360,7 @@ function resetPoster() {
   qrImage.alt = "";
   qrImage.hidden = true;
   qrPlaceholder.hidden = false;
-  posterQr.style.left = `${QR_POSITION.left * 100}%`;
-  posterQr.style.top = `${QR_POSITION.top * 100}%`;
-  posterQr.style.width = `${QR_POSITION.size * 100}%`;
+  applyQrSlot();
   downloadButton.disabled = true;
   updateTelegramMainButton();
   updateSyncControls();
@@ -665,9 +755,7 @@ function readTransferDetails() {
 }
 
 function updatePoster(details, qrDataUrl) {
-  posterQr.style.left = `${QR_POSITION.left * 100}%`;
-  posterQr.style.top = `${QR_POSITION.top * 100}%`;
-  posterQr.style.width = `${QR_POSITION.size * 100}%`;
+  applyQrSlot();
   qrImage.src = qrDataUrl;
   qrImage.alt = `Mã VietQR chuyển khoản đến ${details.accountName}, ${details.bank.name}`;
   qrImage.hidden = false;
@@ -709,7 +797,7 @@ form.addEventListener("submit", async (event) => {
 
 async function createPosterPng({ qrDataUrl }) {
   const background = new Image();
-  background.src = POSTER_BACKGROUND;
+  background.src = posterBackground;
   await new Promise((resolve, reject) => {
     if (background.complete && background.naturalWidth) {
       resolve();

@@ -168,6 +168,22 @@ select {
 }
 
 .access-gate-status,
+.poster-template-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.poster-template-slot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.poster-template-slot input {
+  width: 80px;
+}
+
 .access-admin-status {
   color: var(--muted);
   font-size: 10px;
