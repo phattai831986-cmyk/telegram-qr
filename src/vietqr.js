@@ -1,5 +1,12 @@
 const utf8 = new TextEncoder();
 
+export const VIETQR_RENDER_OPTIONS = Object.freeze({
+  errorCorrectionLevel: "M",
+  margin: 4,
+  width: 480,
+  color: { dark: "#000000", light: "#ffffff" },
+});
+
 function byteLength(value) {
   return utf8.encode(value).length;
 }

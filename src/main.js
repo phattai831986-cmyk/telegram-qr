@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import { BANKS } from "./banks.js";
-import { createVietQrPayload } from "./vietqr.js";
+import { createVietQrPayload, VIETQR_RENDER_OPTIONS } from "./vietqr.js";
 import { supabase, supabaseConfigured } from "./supabase.js";
 import { createTelegramShareUrl, initializeTelegramMiniApp } from "./telegram.js";
 import {
@@ -776,12 +776,7 @@ form.addEventListener("submit", async (event) => {
   try {
     const details = readTransferDetails();
     const payload = createVietQrPayload(details);
-    const qrDataUrl = await QRCode.toDataURL(payload, {
-      errorCorrectionLevel: "M",
-      margin: 2,
-      width: 480,
-      color: { dark: "#15372d", light: "#ffffff" },
-    });
+    const qrDataUrl = await QRCode.toDataURL(payload, VIETQR_RENDER_OPTIONS);
     updatePoster(details, qrDataUrl);
     currentPosterBlob = await createPosterPng(currentPosterData);
     updateSyncControls();
