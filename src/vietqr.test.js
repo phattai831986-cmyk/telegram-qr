@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { BANKS } from "./banks.js";
-import { crc16, createVietQrPayload, formatVnd } from "./vietqr.js";
+import { crc16, createVietQrPayload, formatVnd, VIETQR_RENDER_OPTIONS } from "./vietqr.js";
 
 const transfer = {
   bank: { name: "Example Bank", bin: "970436" },
@@ -28,6 +28,22 @@ test("includes NCB with its VietQR bank identifier", () => {
   assert.ok(BANKS.some(({ name, bin, shortName }) =>
     name === "NCB" && bin === "970419" && shortName === "NCB"
   ));
+});
+
+test("uses a full quiet zone and maximum contrast for reliable bank scanning", () => {
+  assert.equal(VIETQR_RENDER_OPTIONS.margin, 4);
+  assert.equal(VIETQR_RENDER_OPTIONS.color.dark, "#000000");
+  assert.equal(VIETQR_RENDER_OPTIONS.color.light, "#ffffff");
+});
+
+test("uses the official VPBank BIN in the transfer payload", () => {
+  const bank = BANKS.find(({ name }) => name === "VPBank");
+  assert.equal(bank?.bin, "970432");
+
+  const payload = createVietQrPayload({ ...transfer, bank });
+  assert.ok(payload.includes("970432"));
+  assert.ok(payload.includes("QRIBFTTA"));
+  assert.equal(payload.slice(-4), crc16(payload.slice(0, -4)));
 });
 
 test("uses the standard CRC-16/CCITT-FALSE checksum", () => {
